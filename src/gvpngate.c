@@ -21,7 +21,8 @@
 #include "gvpngate.h"
 
 /****************************
- *        Structures        * ****************************/
+ *        Structures        *
+ ****************************/
 struct stat st = {0};
 
 /****************************
@@ -32,7 +33,9 @@ GtkWidget *MainWindow;
 GtkWidget *MainWin_StatusBar;
 GtkListStore *VPN_List;
 
-/**************************** *    Function Declares     * ****************************/
+/****************************
+ *    Function Declares     *
+ ****************************/
 void Destroy_Main_Window (GtkWidget*, gpointer);
 GtkWidget* Create_Main_Window (void);
 int main (int argc, char *argv[]);
@@ -58,7 +61,6 @@ void ShowAboutDialog (void)
 		gtk_widget_hide(AboutBox);
 		break;
 	}
-	Statusbar_Message("Ready");
 }
 
 /****************************************************************************
@@ -622,10 +624,13 @@ gboolean CreateConnection (gpointer data)
 	return(FALSE);
 }
 
-/**************************************************************************** *                                                                          *
- * Function: Statusbar_Message                                              * *                                                                          *
+/****************************************************************************
+ *                                                                          *
+ * Function: Statusbar_Message                                              *
+ *                                                                          *
  * Purpose : display a message in the main window status bar                *
- *                                                                          * ****************************************************************************/
+ *                                                                          *
+ ****************************************************************************/
 void Statusbar_Message(gchar *msg)
 {
 	gtk_statusbar_push(GTK_STATUSBAR(MainWin_StatusBar),
