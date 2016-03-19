@@ -44,7 +44,7 @@ int main (int argc, char *argv[]);
  *                                                                          *
  * Function: ShowAboutDialog                                                *
  *                                                                          *
- * Purpose : handle treeview selection changed signal                       *
+ * Purpose :                                                                *
  *                                                                          *
  ****************************************************************************/
 void ShowAboutDialog (void)
