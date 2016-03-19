@@ -62,9 +62,9 @@ on an entry in the vpn list.  Gvpngate will create the connection and attempt
 to connect to it. If the connection fails, Gvpngate will remove the connection 
 from Gnome Network Manager. If the connection succeeds, the connection will 
 remain available in Gnome Network Manager, even after Gvpngate is closed. To
-refresh the vpn list, select "Refresh" from the menubar or push the
-"Refresh" button. If downloading of the vpn list fails, Gvpngate will attempt
-to use a previously downloaded vpn list.
+refresh the vpn list, select "Refresh" from the menubar or push the "Refresh"
+button. If downloading of the vpn list fails, Gvpngate will attempt to use a
+previously downloaded vpn list.
 
 
  Certificate Files
