@@ -21,12 +21,13 @@
 
  Overview:
 ===========
-Gvpngate is a VPN Gate frontend for Gnome Network Manager. Gvpngate will
+Gvpngate is a VPN Gate frontend for Gnome Network Manager.  Gvpngate will
 will create OpenVPN connections entries based on the vpn list provided by
-the VPN Gate project. For more information concerning the VPN Gate project		
-please visit http://www.vpngate.net. Valid connections will remain in 
-Gnome Network Manager, even after Gvpngate is closed, until deleted by the
-user. Gvpngate is not required to be running to use the created connections.
+the VPN Gate project.  For more information concerning the VPN Gate project		
+please visit http://www.vpngate.net.  Valid connections will remain in 
+Gnome Network Manager, even after Gvpngate is closed.  To remove connections
+created by Gvpngate, use Gnome's Network Settings dialog.  Gvpngate is not
+required to be running to use the created connections.
 
 	
  Runtime Requirements		
@@ -60,24 +61,25 @@ vpn from the list and create a Gnome Network Manager connection by selecting
 on an entry in the vpn list.  Gvpngate will create the connection and attempt 
 to connect to it. If the connection fails, Gvpngate will remove the connection 
 from Gnome Network Manager. If the connection succeeds, the connection will 
-remain available in Gnome Network Manager, even after Gvpngate is closed. 
-Gvpngate is not required to use the created connections. To refresh the vpn 
-list, select "Refresh" from the menubar or push the "Refresh" button. If 
-downloading of the vpn list fails, Gvpngate will attempt to use a previously 
-downloaded vpn list.
+remain available in Gnome Network Manager, even after Gvpngate is closed. To
+refresh the vpn list, select "Refresh" from the menubar or push the
+"Refresh" button. If downloading of the vpn list fails, Gvpngate will attempt
+to use a previously downloaded vpn list.
 
 
  Certificate Files
 ===================
 The CA Certificate files for the created vpn connections are stored in a 
-directory named ".gvpngate" in the current user's home directory. Gvpngate 
-deletes any unused certificate files on shutdown.
+directory named ".gvpngate" in the current user's home directory.  While
+Gvpngate need not be running to access the created connections, access to
+the ".gvpngate" directory is required.  Gvpngate deletes any unused 
+certificate files on shutdown.
 
 
  A note about IPv6
 ===================
 The VPN Gate servers do not appear to support IPv6 at this time and as a
-result neither does Gvpngate. To avoid leaking your IPv6 address and/or your 
+result neither does Gvpngate.  To avoid leaking your IPv6 address and/or your 
 IPv6 DNS inquiries, I suggest following the recomendations at
 https://wiki.debian.org/DebianIPv6#How_to_turn_off_IPv6 for Debian or a 
 similar work-around for your distro.
