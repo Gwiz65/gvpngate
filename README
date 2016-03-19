@@ -33,7 +33,8 @@ user. Gvpngate is not required to be running to use the created connections.
 ======================
 Required Debian packages or your distro equivalent:
 
-	network_manager_openvpn_gnome
+	 - network_manager_openvpn_gnome
+	 - wget
 
 	
  Installation
@@ -48,8 +49,8 @@ As root type:
 To uninstall, as root type:
 	'make uninstall'
 
-Run (as regular user) by typing:
-	gvpngate 
+Run (as regular user) by typing: 'gvpngate'
+	or by selecting Gvpngate from the Applications->Internet menu
 
 
  Using Gvpngate
@@ -72,6 +73,7 @@ downloaded vpn list.
 The CA Certificate files for the created vpn connections are stored in a 
 directory named ".gvpngate" in the current user's home directory. Gvpngate 
 deletes any unused certificate files on shutdown.
+
 
  A note about IPv6
 ===================
