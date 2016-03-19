@@ -1,0 +1,83 @@
+/***************************************************************************
+ *                                                                         * 
+ * gvpngate README                                                         *
+ *                                                                         * 
+ * Copyright (C) 2016 Gwiz <gwiz2009@gmail.com>                            *
+ *                                                                         *     
+ * gvpngate is free software: you can redistribute it and/or modify it     *
+ * under the terms of the GNU General Public License as published by the   *
+ * Free Software Foundation, either version 3 of the License, or           *
+ * (at your option) any later version.                                     *
+ *                                                                         *
+ * gvpngate is distributed in the hope that it will be useful, but         *
+ * WITHOUT ANY WARRANTY; without even the implied warranty of              *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                    *
+ * See the GNU General Public License for more details.                    *
+ *                                                                         *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.         *
+ *                                                                         * 
+ ***************************************************************************/
+
+ Overview:
+===========
+Gvpngate is a VPN Gate frontend for Gnome Network Manager. Gvpngate will
+will create OpenVPN connections entries based on the vpn list provided by
+the VPN Gate project. For more information concerning the VPN Gate project		
+please visit http://www.vpngate.net. Valid connections will remain in 
+Gnome Network Manager, even after Gvpngate is closed, until deleted by the
+user. Gvpngate is not required to be running to use the created connections.
+
+		
+ Runtime Requirements		
+======================
+Required Debian packages or your distro equivalent:
+
+	network_manager_openvpn_gnome
+
+	
+ Installation
+==============
+Unzip to a directory and 'cd' to that directory and type:
+	'./autogen.sh'
+	'./configure'
+	'make'
+As root type:
+	'make install'
+
+To uninstall, as root type:
+	'make uninstall'
+
+Run (as regular user) by typing:
+	gvpngate 
+
+
+ Using Gvpngate
+================
+Usage of Gvpngate is very straightforward. After the vpn list loads select a
+vpn from the list and create a Gnome Network Manager connection by selecting 
+"Connect" from the menubar, pushing the "Connect" button or by double-clicking 
+on an entry in the vpn list.  Gvpngate will create the connection and attempt 
+to connect to it. If the connection fails, Gvpngate will remove the connection 
+from Gnome Network Manager. If the connection succeeds, the connection will 
+remain available in Gnome Network Manager, even after Gvpngate is closed. 
+Gvpngate is not required to use the created connections. To refresh the vpn 
+list, select "Refresh" from the menubar or push the "Refresh" button. If 
+downloading of the vpn list fails, Gvpngate will attempt to use a previously 
+downloaded vpn list.
+
+
+ Certificate Files
+===================
+The CA Certificate files for the created vpn connections are stored in a 
+directory named ".gvpngate" in the current user's home directory. Gvpngate 
+deletes any unused certificate files on shutdown.
+
+ A note about IPv6
+===================
+The VPN Gate servers do not appear to support IPv6 at this time and as a
+result neither does Gvpngate. To avoid leaking your IPv6 address and/or your 
+IPv6 DNS inquiries, I suggest following the recomendations at
+https://wiki.debian.org/DebianIPv6#How_to_turn_off_IPv6 for Debian or a 
+similar work-around for your distro.
+

@@ -1,0 +1,13 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Exec=gvpngate
+Name=Gvpngate
+Comment=Gnome front end for VPN Gate.
+Icon=gvpngate.png
+Categories=GNOME;Network;
+Encoding=UTF-8
+
+
