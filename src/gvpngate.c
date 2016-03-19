@@ -49,13 +49,11 @@ int main (int argc, char *argv[]);
  ****************************************************************************/
 void ShowAboutDialog (void)
 {
-	Statusbar_Message("Opening About window");
 	gint result = gtk_dialog_run (GTK_DIALOG (AboutBox));
 
 	switch (result)
 	{
 	case GTK_RESPONSE_ACCEPT:
-		//do_application_specific_something ();
 		break;
 	default:
 		gtk_widget_hide(AboutBox);
