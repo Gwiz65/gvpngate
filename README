@@ -41,7 +41,7 @@ Required Debian packages or your distro equivalent:
  Installation
 ==============
 Unzip to a directory and 'cd' to that directory and type:
-	'./autogen.sh'
+	'./autogen.sh'	(you may need to grant this file execute permission)
 	'make'
 As root type:
 	'make install'
