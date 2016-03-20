@@ -42,7 +42,7 @@ gvpngateuiicondir = $(pkgdatadir)/ui
 gvpngateuiicon_DATA = gvpngate.png
 
 EXTRA_DIST = $(gvpngatedoc_DATA) $(gvpngatedesktop_DATA)\
-	$(gvpngateicon_DATA) autogen.sh
+	$(gvpngateicon_DATA)
 
 # Remove doc directory on uninstall
 uninstall-local:
