@@ -30,7 +30,8 @@ gvpngatedoc_DATA = \
 	AUTHORS\
 	ChangeLog\
 	INSTALL\
-	NEWS
+	NEWS\
+	LICENSE
 
 gvpngatedesktopdir = $(prefix)/share/applications
 gvpngatedesktop_DATA = gvpngate.desktop

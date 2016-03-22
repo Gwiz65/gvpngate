@@ -21,7 +21,7 @@ dnl * with this program.  If not, see <http://www.gnu.org/licenses/>.         *
 dnl *                                                                         * 
 dnl ***************************************************************************/
 
-AC_INIT(gvpngate, 0.43)
+AC_INIT(gvpngate, 0.44)
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([1.11])
 AM_SILENT_RULES([yes])
