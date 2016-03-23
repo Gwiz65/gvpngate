@@ -20,7 +20,6 @@ dnl * You should have received a copy of the GNU General Public License along *
 dnl * with this program.  If not, see <http://www.gnu.org/licenses/>.         *
 dnl *                                                                         * 
 dnl ***************************************************************************/
-
 AC_INIT(gvpngate, 0.44)
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([1.11])
@@ -29,8 +28,4 @@ AC_PROG_CC
 LT_INIT
 PKG_CHECK_MODULES(GVPNGATE, uuid
 [gtk+-3.0 >= 2.90.3 ])
-AC_OUTPUT([
-Makefile
-src/Makefile
-])
-
+AC_OUTPUT([Makefile src/Makefile])
