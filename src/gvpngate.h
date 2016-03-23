@@ -33,7 +33,7 @@
 #define UI_FILE PACKAGE_DATA_DIR"/ui/gvpngate.ui"
 //#define UI_FILE "src/gvpngate.ui"
 
-#define GVPNGATE_VERSION "0.44"
+#define GVPNGATE_VERSION "0.45"
 
 /****************************
  *      Global Vars         *
