@@ -992,6 +992,16 @@ GtkWidget* Create_Main_Window (void)
 	// initalize statusbar and set the statusbar conxtext id
 	MainWin_StatusBarID = gtk_statusbar_get_context_id
 		(GTK_STATUSBAR(MainWin_StatusBar), "Main Window Messages");
+	// create a dummy.crt file so ls command doesn't complain on cleanup
+	{
+		FILE *dummyfile;
+		gchar *tempstr = NULL;
+
+		// use a name that is pretty sure not to be someone's NM vpn name
+		tempstr = g_strconcat(WorkDir, "/_gvpngate_temporary_dummy_junk_file_.crt", NULL);
+		dummyfile = fopen(tempstr, "w");
+		if (dummyfile != NULL) fclose(dummyfile);			
+	}
 	Statusbar_Message("Downloading vpn list.  Please wait...");
 	return window;
 }
@@ -1007,12 +1017,12 @@ int main (int argc, char *argv[])
 {
 	// initalize gtk
 	gtk_init (&argc, &argv);
-	// create main window
-	MainWindow = Create_Main_Window ();
 	// set our work directory
 	WorkDir = g_strconcat (g_get_home_dir (), "/.gvpngate", NULL);
 	// make sure work directory exists
 	if (stat(WorkDir, &st) == -1) mkdir(WorkDir, 0700);
+	// create main window
+	MainWindow = Create_Main_Window ();
 	// show main window
 	gtk_widget_show (MainWindow);
 	// get vpn list after main loop has started
