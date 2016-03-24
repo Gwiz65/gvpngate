@@ -70,8 +70,8 @@ void ShowAboutDialog (void)
  ****************************************************************************/
 void VpnListSelectionChanged (void)
 {
-	GtkTreeModel     *model;
-	GtkTreeIter       iter;
+	GtkTreeModel *model;
+	GtkTreeIter iter;
 	gchar *ipaddress = NULL;
 	gchar *port = NULL;
 	gchar *cipher = NULL;
@@ -93,7 +93,7 @@ void VpnListSelectionChanged (void)
 			gsize out_len;
 			gboolean getline_loop = TRUE;
 			gint linepos = 0;  //first char of current line
-	
+
 			// get info from config data
 			gtk_tree_model_get (model, &iter, 14, &config_data, -1);
 			decoded = (gchar*)g_base64_decode(config_data, &out_len);
@@ -171,11 +171,9 @@ void VpnListSelectionChanged (void)
 						if (line[6+ctr] == '\0') ctr--;
 						protocol = g_strndup (line+6, ctr);
 					}
-
 					// testing purposes - displays config data
 					//g_print("\n");
 					//g_print(line);
-
 				}
 				linepos = linepos + ctr + 1;
 				g_free(line);
@@ -225,7 +223,7 @@ void VpnListSelectionChanged (void)
 	else
 	{
 		// no row selected
-		
+		// grey out connect menu item
 		gtk_widget_set_sensitive (MainWin_Menu_Connect, FALSE);
 		// grey out connect button & menu
 		gtk_widget_set_sensitive (MainWin_TB_Connect, FALSE);
@@ -252,8 +250,8 @@ void VpnListSelectionChanged (void)
  ****************************************************************************/
 gboolean CreateConnection (gpointer data)
 {
-	GtkTreeModel     *model;
-	GtkTreeIter       iter;
+	GtkTreeModel *model;
+	GtkTreeIter iter;
 	gchar *cmdstr = NULL;
 	gchar *vpnname = NULL;
 	gchar *ipaddress = NULL;
@@ -677,7 +675,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 		// clean up tmp file on download fail
 		tempstr = g_strconcat(WorkDir, "/vpn.tmp", NULL);
 		if (stat(tempstr, &st) == 0) remove(tempstr);
-		
 		// see if we have an old file
 		tempstr = g_strconcat(WorkDir, "/vpn.lst", NULL);
 		if (stat(tempstr, &st) == 0)
@@ -690,7 +687,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			return(FALSE);
 		}
 	}
-
 	// open vpn list file
 	tempstr = g_strconcat(WorkDir, "/vpn.lst", NULL);
 	vpnlistfile = fopen(tempstr, "r");
@@ -857,7 +853,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 	}
 	// close file
 	if (vpnlistfile != NULL) fclose(vpnlistfile);
-
 	g_free(line);
 	g_free(tempstr);
 	return(FALSE);
@@ -872,7 +867,6 @@ gboolean Get_Vpn_List_File(gpointer data)
  ****************************************************************************/
 void Destroy_Main_Window (GtkWidget *widget, gpointer data)
 {
-
 	gchar *cmdstr = NULL;
 	gint ret = -1;
 
@@ -936,7 +930,6 @@ void Destroy_Main_Window (GtkWidget *widget, gpointer data)
 	gtk_widget_destroy (VPN_List_Treeview);
 	gtk_widget_destroy (MainWin_Menu_Connect);
 	gtk_widget_destroy (AboutBox);
-	
 	// release global strings
 	g_free(WorkDir);
 	// release local string
@@ -967,10 +960,8 @@ GtkWidget* Create_Main_Window (void)
 	}
 	// Auto-connect signal handlers
 	gtk_builder_connect_signals (builder, NULL);
-
 	// widgets we care about - don't forget to release them later
 	window = GTK_WIDGET (gtk_builder_get_object(builder, "mainwindow"));
-
 	MainWin_StatusBar = GTK_WIDGET (gtk_builder_get_object
 	                                (builder,"mainwindowstatbar"));
 	MainWin_TB_Connect = GTK_WIDGET (gtk_builder_get_object
@@ -987,16 +978,14 @@ GtkWidget* Create_Main_Window (void)
 	                                (builder, "vpnlisttreeview"));
 	MainWin_Menu_Connect = GTK_WIDGET (gtk_builder_get_object
 	                                (builder, "menuitemConnect"));
-
 	AboutBox = GTK_WIDGET (gtk_builder_get_object
 	                                (builder, "aboutbox"));
-
 	// list store object
 	VPN_List = GTK_LIST_STORE (gtk_builder_get_object
 	                                (builder,"vpn_liststore"));
 	// release builder
 	g_object_unref (builder);
-		// set version in about dialog
+	// set version in about dialog
 	gtk_about_dialog_set_version (GTK_ABOUT_DIALOG(AboutBox), 
 	                              g_strconcat("Version ", GVPNGATE_VERSION, 
 	                                          NULL));
@@ -1016,7 +1005,6 @@ GtkWidget* Create_Main_Window (void)
  ****************************************************************************/
 int main (int argc, char *argv[])
 {
- 
 	// initalize gtk
 	gtk_init (&argc, &argv);
 	// create main window
