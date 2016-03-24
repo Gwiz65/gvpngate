@@ -1000,7 +1000,8 @@ GtkWidget* Create_Main_Window (void)
 		// use a name that is pretty sure not to be someone's NM vpn name
 		tempstr = g_strconcat(WorkDir, "/_gvpngate_temporary_dummy_junk_file_.crt", NULL);
 		dummyfile = fopen(tempstr, "w");
-		if (dummyfile != NULL) fclose(dummyfile);			
+		if (dummyfile != NULL) fclose(dummyfile);
+		g_free(tempstr);
 	}
 	Statusbar_Message("Downloading vpn list.  Please wait...");
 	return window;
