@@ -87,21 +87,20 @@ void VpnListSelectionChanged (void)
 		// light up connect button
 		gtk_widget_set_sensitive (MainWin_Menu_Connect, TRUE);
 		gtk_widget_set_sensitive (MainWin_TB_Connect, TRUE);
-		
 		{
-			// get info from config data
-			gchar *decoded;
-			gchar *config_data;
+			gchar *decoded = NULL;
+			gchar *config_data = NULL;
 			gsize out_len;
 			gboolean getline_loop = TRUE;
 			gint linepos = 0;  //first char of current line
 	
+			// get info from config data
 			gtk_tree_model_get (model, &iter, 14, &config_data, -1);
 			decoded = (gchar*)g_base64_decode(config_data, &out_len);
 			while (getline_loop)
 			{
 				gint ctr = 0;
-				gchar *line;
+				gchar *line = NULL;
 
 				while ((decoded[linepos+ctr] != '\0') &&
 				       (decoded[linepos+ctr] != '\n')) ctr++;
@@ -177,54 +176,51 @@ void VpnListSelectionChanged (void)
 					//g_print("\n");
 					//g_print(line);
 
-					g_free(line);
 				}
 				linepos = linepos + ctr + 1;
+				g_free(line);
 			}
+			g_free(decoded);
+			g_free(config_data);
 		}
 		// set info label1
 		{
-			gchar *name;
-			gchar *country;
-			gchar *labelstr;
+			gchar *name = NULL;
+			gchar *country = NULL;
+			gchar *labelstr = NULL;
 
 			gtk_tree_model_get (model, &iter, 0, &name, -1);
 			gtk_tree_model_get (model, &iter, 5, &country, -1);
 			labelstr = g_strconcat (name, "\n", country, NULL);
 			gtk_label_set_markup (GTK_LABEL(MainWin_Info_1), labelstr);
-
 			g_free(name);
 			g_free(country);
 			g_free(labelstr);
 		}	
 		// set info label2
 		{
-			gchar *labelstr;
+			gchar *labelstr = NULL;
 
 			labelstr = g_strconcat (ipaddress, "\n", port, NULL);
 			gtk_label_set_markup (GTK_LABEL(MainWin_Info_2), labelstr);
-
 			g_free(labelstr);
 		}	
 		// set info label3
 		{
-			gchar *labelstr;
+			gchar *labelstr = NULL;
 
 			labelstr = g_strconcat (cipher, "\n", auth, NULL);
 			gtk_label_set_markup (GTK_LABEL(MainWin_Info_3), labelstr);
-
 			g_free(labelstr);
 		}	
 		// set info label4
 		{
-			gchar *labelstr;
+			gchar *labelstr = NULL;
 
 			labelstr = g_strconcat (device, "\n", protocol, NULL);
 			gtk_label_set_markup (GTK_LABEL(MainWin_Info_4), labelstr);
-
 			g_free(labelstr);
 		}	
-
 	}
 	else
 	{
@@ -281,8 +277,8 @@ gboolean CreateConnection (gpointer data)
 	{
 		// a row has been selected
 		// get info from config data
-		gchar *decoded;
-		gchar *config_data;
+		gchar *decoded = NULL;
+		gchar *config_data = NULL;
 		gsize out_len;
 		gboolean getline_loop = TRUE;
 		gint linepos = 0;  //first char of current line
@@ -389,7 +385,7 @@ gboolean CreateConnection (gpointer data)
 			g_free(line);
 		}
 		// close crt file
-		if (crtfile != NULL) fclose(crtfile);
+		if (crtfile != NULL) fclose(crtfile);			
 		g_free(decoded);
 		g_free(config_data);
 	}
@@ -406,7 +402,8 @@ gboolean CreateConnection (gpointer data)
 		tempstr = g_strconcat(WorkDir, "/", vpnname, NULL);
 		connectfile = fopen(tempstr, "w");
 		if (connectfile == NULL)
-			Statusbar_Message("Unable to write temp connection file. This sucks.");
+			Statusbar_Message(
+			              "Unable to write temp connection file. This sucks.");
 		else
 		{
 			uuid_t uuid;
@@ -449,7 +446,8 @@ gboolean CreateConnection (gpointer data)
 				statusfile = fopen(tempstr, "r");
 				if (statusfile == NULL)
 				{
-					Statusbar_Message("Unable to read status file. This sucks.");
+					Statusbar_Message(
+					                "Unable to read status file. This sucks.");
 				}
 				else
 				{
@@ -492,7 +490,6 @@ gboolean CreateConnection (gpointer data)
 				g_free(line);
 				g_free(tempstr);
 			}
-			g_free(country);
 			// write connection file
 			fprintf(connectfile, "[connection]\n");
 			fprintf(connectfile, "id=%s\n", nm_id);
@@ -501,7 +498,8 @@ gboolean CreateConnection (gpointer data)
 			uuid_unparse_lower(uuid, uuid_str);
 			fprintf(connectfile, "uuid=%s\n", uuid_str);
 			fprintf(connectfile, "type=vpn\n\n[vpn]\n");
-			fprintf(connectfile, "service-type=org.freedesktop.NetworkManager.openvpn\n");
+			fprintf(connectfile, 
+			        "service-type=org.freedesktop.NetworkManager.openvpn\n");
 			fprintf(connectfile, "connection-type=password\n");
 			fprintf(connectfile, "auth=%s\n", auth);
 			fprintf(connectfile, "password-flags=0\n");
@@ -518,6 +516,7 @@ gboolean CreateConnection (gpointer data)
 			fprintf(connectfile, "\n[ipv4]\nmethod=auto\n");
 			// close connection file
 			if (connectfile != NULL) fclose(connectfile);
+			g_free(country);
 		}
 		g_free(tempstr);
 	}
@@ -575,7 +574,8 @@ gboolean CreateConnection (gpointer data)
 				if (!strncmp(token2, "yes", 3))
 				{
 					// kill the vpn connection
-					cmdstr = g_strconcat("nmcli con down id \"", token1, "\">NULL", NULL);
+					cmdstr = g_strconcat("nmcli con down id \"", token1, 
+					                     "\">NULL", NULL);
 					system(cmdstr);
 					sleep(1);
 				}
@@ -595,7 +595,7 @@ gboolean CreateConnection (gpointer data)
 	// check to see connection worked
 	if (!ret) 
 	{
-		gchar *msg;
+		gchar *msg = NULL;
 
 		msg = g_strconcat("Successfully connected to: ", vpnname, 
 		                  " (", nm_id, ")", NULL); 
@@ -604,7 +604,8 @@ gboolean CreateConnection (gpointer data)
 	}
 	else
 	{
-		Statusbar_Message("Connection failed. Removing VPN from Network Manager...."); 
+		Statusbar_Message(
+		           "Connection failed. Removing VPN from Network Manager...."); 
 		cmdstr = g_strconcat("nmcli con delete id \"", nm_id, "\">NULL", NULL);
 		system(cmdstr);
 		sleep(1);
@@ -654,14 +655,11 @@ gboolean Get_Vpn_List_File(gpointer data)
 	// unselect rows
 	gtk_tree_selection_unselect_all
 		(gtk_tree_view_get_selection(GTK_TREE_VIEW(VPN_List_Treeview)));
-
 	// call wget to retrieve data file
 	tempstr = g_strconcat("wget --output-document=", WorkDir, "/vpn.tmp ",
 	                      "--quiet --timeout=20 ",
 	                      "http://www.vpngate.net/api/iphone/", ">NULL", NULL);
 	ret = system(tempstr);
-	g_free(tempstr);
-	
 	// check to see if we got the file
 	if (!ret) 
 	{
@@ -671,17 +669,14 @@ gboolean Get_Vpn_List_File(gpointer data)
 		tempstr = g_strconcat(WorkDir,"/vpn.tmp", NULL);
 		tempstr2 = g_strconcat(WorkDir,"/vpn.lst", NULL);
 		rename(tempstr, tempstr2);
-		g_free(tempstr);
-		g_free(tempstr2);
-
 		Statusbar_Message("Vpn list successfully downloaded.");
+		g_free(tempstr2);
 	}
 	else
 	{
 		// clean up tmp file on download fail
 		tempstr = g_strconcat(WorkDir, "/vpn.tmp", NULL);
 		if (stat(tempstr, &st) == 0) remove(tempstr);
-		g_free(tempstr);
 		
 		// see if we have an old file
 		tempstr = g_strconcat(WorkDir, "/vpn.lst", NULL);
@@ -694,13 +689,11 @@ gboolean Get_Vpn_List_File(gpointer data)
 			Statusbar_Message("Vpn list download has completely failed.");
 			return(FALSE);
 		}
-		g_free(tempstr);
 	}
 
 	// open vpn list file
 	tempstr = g_strconcat(WorkDir, "/vpn.lst", NULL);
 	vpnlistfile = fopen(tempstr, "r");
-	g_free(tempstr);
 	if (vpnlistfile == NULL)
 	{
 		Statusbar_Message("Unable to read VPN list. This sucks.");
@@ -719,7 +712,7 @@ gboolean Get_Vpn_List_File(gpointer data)
 			// we have a valid line
 			gint ctr = 0;
 			gint pos = 0;
-			gchar *token;
+			gchar *token = NULL;
 			GtkTreeIter iter;
 			
 			//append line to list store
@@ -734,7 +727,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 				token = g_strndup (line+pos, ctr); 
 			// add to list store
 			gtk_list_store_set (VPN_List, &iter, 0, token, -1);
-			g_free(token);
 			pos = pos + ctr + 1;
 
 			//get IP
@@ -743,7 +735,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			token = g_strndup (line+pos, ctr);
 			// add to list store
 			gtk_list_store_set (VPN_List, &iter, 1, token, -1);
-			g_free(token);
 			pos = pos + ctr + 1;
 
 			//get Score
@@ -752,7 +743,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			token = g_strndup (line+pos, ctr);
 			// add to list store
 			gtk_list_store_set (VPN_List, &iter, 2, atol(token), -1);
-			g_free(token);
 			pos = pos + ctr + 1;
 
 			//get Ping
@@ -761,7 +751,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			token = g_strndup (line+pos, ctr);
 			// add to list store
 			gtk_list_store_set (VPN_List, &iter, 3, atol(token), -1);
-			g_free(token);
 			pos = pos + ctr + 1;
 
 			//get Speed
@@ -770,7 +759,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			token = g_strndup (line+pos, ctr);
 			// add to list store
 			gtk_list_store_set (VPN_List, &iter, 4, atol(token), -1);
-			g_free(token);
 			pos = pos + ctr + 1;
 
 			// get CountryLong
@@ -783,7 +771,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 				token = g_strndup (line+pos, ctr); 
 			// add to list store
 			gtk_list_store_set (VPN_List, &iter, 5, token, -1);
-			g_free(token);
 			pos = pos + ctr + 1;
 
 			// get CountryShort
@@ -792,7 +779,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			token = g_strndup (line+pos, ctr);
 			// add to list store
 			gtk_list_store_set (VPN_List, &iter, 6, token, -1);
-			g_free(token);
 			pos = pos + ctr + 1;
 
 			// get NumVpnSessions
@@ -801,7 +787,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			token = g_strndup (line+pos, ctr);
 			// add to list store
 			gtk_list_store_set (VPN_List, &iter, 7, atol(token), -1);
-			g_free(token);
 			pos = pos + ctr + 1;
 
 			// get Uptime
@@ -810,7 +795,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			token = g_strndup (line+pos, ctr);
   		    // add to list store
 			gtk_list_store_set (VPN_List, &iter, 8, atol(token), -1);
-			g_free(token);
 			pos = pos + ctr + 1;
 
 			// get TotalUsers
@@ -819,7 +803,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			token = g_strndup (line+pos, ctr);
 			// add to list store
 			gtk_list_store_set (VPN_List, &iter, 9, atol(token), -1);
-			g_free(token);
 			pos = pos + ctr + 1;
 
 			// get TotalTraffic
@@ -828,7 +811,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			token = g_strndup (line+pos, ctr);
 			// add to list store
 			gtk_list_store_set (VPN_List, &iter, 10, atol(token), -1);
-			g_free(token);
 			pos = pos + ctr + 1;
 
 			// get LogType
@@ -837,7 +819,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			token = g_strndup (line+pos, ctr);
 			// add to list store
 			gtk_list_store_set (VPN_List, &iter, 11, token, -1);
-			g_free(token);
 			pos = pos + ctr + 1;
 
 			// get Operator
@@ -850,7 +831,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 				token = g_strndup (line+pos, ctr); 
 			// add to list store
 			gtk_list_store_set (VPN_List, &iter, 12, token, -1);
-			g_free(token);
 			pos = pos + ctr + 1;
 
 			// get Message
@@ -863,7 +843,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 				token = g_strndup (line+pos, ctr); 
 			// add to list store
 			gtk_list_store_set (VPN_List, &iter, 13, token, -1);
-			g_free(token);
 			pos = pos + ctr + 1;
 
 			// get ConfigData
@@ -872,11 +851,15 @@ gboolean Get_Vpn_List_File(gpointer data)
 			token = g_strndup (line+pos, ctr);
 			// add to list store
 			gtk_list_store_set (VPN_List, &iter, 14, token, -1);
+			
 			g_free(token);
 		}
 	}
 	// close file
 	if (vpnlistfile != NULL) fclose(vpnlistfile);
+
+	g_free(line);
+	g_free(tempstr);
 	return(FALSE);
 }
 
@@ -891,11 +874,13 @@ void Destroy_Main_Window (GtkWidget *widget, gpointer data)
 {
 
 	gchar *cmdstr = NULL;
+	gint ret = -1;
 
-	// delete unused crts
+	// get a list of .crt files
 	cmdstr = g_strconcat("cd \"", WorkDir, "\" && ls *.crt >\"", 
 	                      WorkDir, "/status\"", NULL);
-	system(cmdstr);
+	ret = system(cmdstr);
+	if (!ret)	// make sure ls command worked
 	{
 		FILE *statusfile;
 		gchar *line = NULL;
@@ -911,7 +896,7 @@ void Destroy_Main_Window (GtkWidget *widget, gpointer data)
 		}
 		else
 		{
-			// getline loop
+			// step through status file
 			while ((read = getline(&line, &len, statusfile)) != -1) 
 			{
 				gchar *tmpstr2 = NULL;
@@ -922,6 +907,7 @@ void Destroy_Main_Window (GtkWidget *widget, gpointer data)
 				tmpstr3 = g_strconcat("/etc/NetworkManager/system-connections/", 
 			                      tmpstr2, NULL);
 				tmpstr4 = g_strconcat(WorkDir, "/", tmpstr2, ".crt", NULL);
+				// if it dosen't exist in NM dir, delete from work dir
 				if (stat(tmpstr3, &st) != 0)
 					remove(tmpstr4);
 				g_free(tmpstr2);
