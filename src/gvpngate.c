@@ -722,7 +722,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 			else
 				token = g_strndup (line+pos, ctr); 
 			// add to list store
-			gtk_list_store_set (VPN_List, &iter, 0, token, -1);
+			if (g_utf8_validate (token, -1, NULL))
+				gtk_list_store_set (VPN_List, &iter, 0, token, -1);
 			pos = pos + ctr + 1;
 
 			//get IP
@@ -730,7 +731,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
 			// add to list store
-			gtk_list_store_set (VPN_List, &iter, 1, token, -1);
+			if (g_utf8_validate (token, -1, NULL))
+				gtk_list_store_set (VPN_List, &iter, 1, token, -1);
 			pos = pos + ctr + 1;
 
 			//get Score
@@ -738,7 +740,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
 			// add to list store
-			gtk_list_store_set (VPN_List, &iter, 2, atol(token), -1);
+			if (g_utf8_validate (token, -1, NULL))
+				gtk_list_store_set (VPN_List, &iter, 2, atol(token), -1);
 			pos = pos + ctr + 1;
 
 			//get Ping
@@ -746,7 +749,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
 			// add to list store
-			gtk_list_store_set (VPN_List, &iter, 3, atol(token), -1);
+			if (g_utf8_validate (token, -1, NULL))
+				gtk_list_store_set (VPN_List, &iter, 3, atol(token), -1);
 			pos = pos + ctr + 1;
 
 			//get Speed
@@ -754,7 +758,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
 			// add to list store
-			gtk_list_store_set (VPN_List, &iter, 4, atol(token), -1);
+			if (g_utf8_validate (token, -1, NULL))
+				gtk_list_store_set (VPN_List, &iter, 4, atol(token), -1);
 			pos = pos + ctr + 1;
 
 			// get CountryLong
@@ -766,7 +771,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 			else
 				token = g_strndup (line+pos, ctr); 
 			// add to list store
-			gtk_list_store_set (VPN_List, &iter, 5, token, -1);
+			if (g_utf8_validate (token, -1, NULL))
+				gtk_list_store_set (VPN_List, &iter, 5, token, -1);
 			pos = pos + ctr + 1;
 
 			// get CountryShort
@@ -774,7 +780,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
 			// add to list store
-			gtk_list_store_set (VPN_List, &iter, 6, token, -1);
+			if (g_utf8_validate (token, -1, NULL))
+				gtk_list_store_set (VPN_List, &iter, 6, token, -1);
 			pos = pos + ctr + 1;
 
 			// get NumVpnSessions
@@ -782,7 +789,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
 			// add to list store
-			gtk_list_store_set (VPN_List, &iter, 7, atol(token), -1);
+			if (g_utf8_validate (token, -1, NULL))
+				gtk_list_store_set (VPN_List, &iter, 7, atol(token), -1);
 			pos = pos + ctr + 1;
 
 			// get Uptime
@@ -790,7 +798,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
   		    // add to list store
-			gtk_list_store_set (VPN_List, &iter, 8, atol(token), -1);
+			if (g_utf8_validate (token, -1, NULL))
+				gtk_list_store_set (VPN_List, &iter, 8, atol(token), -1);
 			pos = pos + ctr + 1;
 
 			// get TotalUsers
@@ -798,7 +807,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
 			// add to list store
-			gtk_list_store_set (VPN_List, &iter, 9, atol(token), -1);
+			if (g_utf8_validate (token, -1, NULL))
+				gtk_list_store_set (VPN_List, &iter, 9, atol(token), -1);
 			pos = pos + ctr + 1;
 
 			// get TotalTraffic
@@ -806,7 +816,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
 			// add to list store
-			gtk_list_store_set (VPN_List, &iter, 10, atol(token), -1);
+			if (g_utf8_validate (token, -1, NULL))
+				gtk_list_store_set (VPN_List, &iter, 10, atol(token), -1);
 			pos = pos + ctr + 1;
 
 			// get LogType
@@ -814,7 +825,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
 			// add to list store
-			gtk_list_store_set (VPN_List, &iter, 11, token, -1);
+			if (g_utf8_validate (token, -1, NULL))
+				gtk_list_store_set (VPN_List, &iter, 11, token, -1);
 			pos = pos + ctr + 1;
 
 			// get Operator
@@ -826,7 +838,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 			else
 				token = g_strndup (line+pos, ctr); 
 			// add to list store
-			gtk_list_store_set (VPN_List, &iter, 12, token, -1);
+			if (g_utf8_validate (token, -1, NULL))
+				gtk_list_store_set (VPN_List, &iter, 12, token, -1);
 			pos = pos + ctr + 1;
 
 			// get Message
@@ -838,7 +851,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 			else
 				token = g_strndup (line+pos, ctr); 
 			// add to list store
-			gtk_list_store_set (VPN_List, &iter, 13, token, -1);
+			if (g_utf8_validate (token, -1, NULL))
+			    gtk_list_store_set (VPN_List, &iter, 13, token, -1);
 			pos = pos + ctr + 1;
 
 			// get ConfigData
@@ -846,7 +860,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 			while (line[pos+ctr] != '\n') ctr++;
 			token = g_strndup (line+pos, ctr);
 			// add to list store
-			gtk_list_store_set (VPN_List, &iter, 14, token, -1);
+			if (g_utf8_validate (token, -1, NULL))
+				gtk_list_store_set (VPN_List, &iter, 14, token, -1);
 			
 			g_free(token);
 		}
