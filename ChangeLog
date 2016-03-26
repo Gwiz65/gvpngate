@@ -18,20 +18,4 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.         *
  *                                                                         * 
  ***************************************************************************/
-
-v0.45 03-22-2016
-================
-	- fixed error in configure.ac
-
-v0.44 03-22-2016
-================
-	- fixed menu item Quit not triggering cleanup routine
-
-v0.43 03-20-2016
-================
-	- removed autogen.sh
-
-v0.42 03-19-2016
-================
-	- Initial Release
-
+ 
