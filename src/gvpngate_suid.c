@@ -61,7 +61,7 @@ int main ( int argc, char *argv[] )
 				ret = chmod(argv[2], strtol("0600", 0, 8));
 				if (ret)
 					printf(
-					    "Unable to set ownership of system connection file.");
+					    "Unable to set permissions of system connection file.");
 			}
 			else
 				printf("Unable to create system connection file.");
