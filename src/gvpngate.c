@@ -418,7 +418,7 @@ gboolean CreateConnection (gpointer data)
 			                      vpnname, NULL);
 			if (stat(filestr, &st) == 0) 
 			{
-				cmdstr = g_strconcat("gvpngate_suid **remove_connection** \"",
+				cmdstr = g_strconcat("gvpngate_suid \"",
 				                     "/etc/NetworkManager/system-connections/", 
 				                     vpnname, "\">NULL", NULL);
 				system(cmdstr);
