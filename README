@@ -34,10 +34,11 @@ required to be running to use the created connections.
 ======================
 Required Debian packages or your distro equivalent:
 
+	 - libgtk-3-0
 	 - network_manager_openvpn_gnome
+	 - libuuid1
 	 - wget
 
-	
  Installation
 ==============
 Unzip to a directory and 'cd' to that directory and type:
