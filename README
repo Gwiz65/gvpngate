@@ -33,7 +33,6 @@ required to be running to use the created connections.
  Runtime Requirements		
 ======================
 Required Debian packages or your distro equivalent:
-
 	 - libgtk-3-0
 	 - network_manager_openvpn_gnome
 	 - libuuid1
