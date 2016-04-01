@@ -17,7 +17,7 @@
  * See the GNU General Public License for more details.                    *
  *                                                                         *
  * You should have received a copy of the GNU General Public License along *
- * with this program.  If not, see <http://www.gnu.org/licenses/>.         *
+ * with this program.  If not, see <https://www.gnu.org/licenses/>.        *
  *                                                                         * 
  ***************************************************************************/
 -->
@@ -36,7 +36,7 @@
     <property name="copyright" translatable="yes">Copyright (C) 2016 Gwiz</property>
     <property name="comments" translatable="yes">VPN Gate frontend for Gnome</property>
     <property name="license" translatable="yes">This program comes with ABSOLUTELY NO WARRANTY;
-for details, visit &lt;a href="http://www.gnu.org/licenses/gpl.html"&gt;http://www.gnu.org/licenses/gpl.html&lt;/a&gt;</property>
+for details, visit &lt;a href="https://www.gnu.org/licenses/gpl.html"&gt;https://www.gnu.org/licenses/gpl.html&lt;/a&gt;</property>
     <property name="logo">gvpngate.png</property>
     <property name="wrap_license">True</property>
     <property name="license_type">gpl-3-0</property>

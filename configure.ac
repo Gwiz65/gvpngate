@@ -17,7 +17,7 @@ dnl * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                    *
 dnl * See the GNU General Public License for more details.                    *
 dnl *                                                                         *
 dnl * You should have received a copy of the GNU General Public License along *
-dnl * with this program.  If not, see <http://www.gnu.org/licenses/>.         *
+dnl * with this program.  If not, see <https://www.gnu.org/licenses/>.        *
 dnl *                                                                         * 
 dnl ***************************************************************************/
 AC_INIT(gvpngate, 0.46)

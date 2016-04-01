@@ -15,7 +15,7 @@
  * See the GNU General Public License for more details.                    *
  *                                                                         *
  * You should have received a copy of the GNU General Public License along *
- * with this program.  If not, see <http://www.gnu.org/licenses/>.         *
+ * with this program.  If not, see <https://www.gnu.org/licenses/>.        *
  *                                                                         * 
  ***************************************************************************/
 #include <stdio.h>
@@ -54,17 +54,24 @@ int main ( int argc, char *argv[] )
 				fclose(dst);
 				// change owner and group to root
 				ret = chown(argv[2], 0, 0);
-				if (ret)
-					printf(
-					    "Unable to set ownership of system connection file.");
+				if (ret) 
+				{
+					printf("Unable to set ownership of system connection file.");
+					return 1;
+				}
 				// set permissions
 				ret = chmod(argv[2], strtol("0600", 0, 8));
-				if (ret)
-					printf(
-					    "Unable to set permissions of system connection file.");
+				if (ret) 
+				{
+					printf("Unable to set permissions of system connection file.");
+					return 1;
+				}
 			}
 			else
+			{
 				printf("Unable to create system connection file.");
+				return 1;
+			}
 			break; 
 		}
 		default:
