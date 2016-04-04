@@ -21,8 +21,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <unistd.h>
+#include <sys/stat.h>
  
 int main ( int argc, char *argv[] )
 {
@@ -31,7 +31,11 @@ int main ( int argc, char *argv[] )
 		case 2:
 		{
 			// only one filename - delete it
-			remove(argv[1]);
+			if (remove(argv[1])) 
+			{
+				printf("Unable to delete system connection file.");
+				return 1;
+			}
 			break;
 		}	
 		case 3:
@@ -46,22 +50,19 @@ int main ( int argc, char *argv[] )
 			{
 				char *line;
 				size_t len = 0;
-				int ret;
 
 				while (getline(&line, &len, src) != -1) 
 					fprintf(dst, "%s", line);
 				fclose(src);
 				fclose(dst);
 				// change owner and group to root
-				ret = chown(argv[2], 0, 0);
-				if (ret) 
+				if (chown(argv[2], 0, 0)) 
 				{
 					printf("Unable to set ownership of system connection file.");
 					return 1;
 				}
 				// set permissions
-				ret = chmod(argv[2], strtol("0600", 0, 8));
-				if (ret) 
+				if (chmod(argv[2], strtol("0600", 0, 8))) 
 				{
 					printf("Unable to set permissions of system connection file.");
 					return 1;
