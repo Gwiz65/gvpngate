@@ -24,7 +24,7 @@
     <section class="page-header">
         <h1 class="project-name">Gvpngate</h1>
         <h2 class="project-tagline">VPN Gate frontend for Gnome</h2>
-        <a href="https://github.com/Gwiz65/gvpngate" class="btn">View on GitHub</a> <a href="https://github.com/Gwiz65/gvpngate/wiki" class="btn">Gvpngate Wiki</a> <a href="https://github.com/Gwiz65/gvpngate/archive/v0.47.zip" class="btn">Download .zip</a> <a href="https://github.com/Gwiz65/gvpngate/archive/v0.47.tar.gz" class="btn">Download .tar.gz</a>
+        <a href="https://github.com/Gwiz65/gvpngate" class="btn">View on GitHub</a> <a href="https://github.com/Gwiz65/gvpngate/wiki" class="btn">Gvpngate Wiki</a> <a href="https://github.com/Gwiz65/gvpngate/archive/v0.48.zip" class="btn">Download .zip</a> <a href="https://github.com/Gwiz65/gvpngate/archive/v0.48.tar.gz" class="btn">Download .tar.gz</a>
     </section>
     <section class="main-content">
         <center>
@@ -40,12 +40,22 @@
         <p>Required Debian packages or your distro equivalent:</p>
         <pre>
 <code>libgtk-3-0
-network-manager-openvpn-gnome
 libuuid1
-wget</code>
+network_manager_openvpn_gnome
+wget
+coreutils
+findutils</code>
 </pre>
         <h1><a id="-installation" class="anchor" href="#-installation" aria-hidden="true"></a> Installation</h1>
-        <p>Unzip to a directory and 'cd' to that directory and type:</p>
+        <p>Install required Debian packages or your distro equivalent:</p>
+        <pre>
+<code>autoconf
+libtool
+pkg-config
+libgtk-3-dev
+uuid-dev</code>
+</pre>
+        <p>Extract source archive to a directory, 'cd' to that directory and type:</p>
         <pre>
 <code>autoreconf -i --force
 ./configure
