@@ -34,16 +34,26 @@ required to be running to use the created connections.
 ======================
 Required Debian packages or your distro equivalent:
 	 - libgtk-3-0
-	 - network_manager_openvpn_gnome
 	 - libuuid1
+	 - network_manager_openvpn_gnome
 	 - wget
+	 - coreutils
+	 - findutils
 
  Installation
 ==============
-Unzip to a directory and 'cd' to that directory and type:
+Install required Debian packages or your distro equivalent:
+	 - autoconf
+	 - libtool
+	 - pkg-config
+	 - libgtk-3-dev
+	 - uuid-dev
+
+Extract source archive to a directory and 'cd' to that directory and type:
 	'autoreconf -i --force'
 	'./configure'
 	'make'
+
 As root type:
 	'make install'
 
