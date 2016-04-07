@@ -22,81 +22,84 @@
         window.location.protocol = "https";
 </script>    
 <section class="page-header">
-        <h1 class="project-name">Gvpngate</h1>
-        <h2 class="project-tagline">VPN Gate frontend for Gnome</h2>
-        <a href="https://github.com/Gwiz65/gvpngate/archive/v0.49.zip" class="btn">Download .zip</a> <a href="https://github.com/Gwiz65/gvpngate/archive/v0.49.tar.gz" class="btn">Download .tar.gz</a>
-        <br />
-        <a href="https://github.com/Gwiz65/gvpngate" class="btn">View on GitHub</a> <a href="https://github.com/Gwiz65/gvpngate/wiki" class="btn">Gvpngate Wiki</a> <a href="http://ost.io/@Gwiz65/gvpngate" class="btn">Gvpngate Forum</a>
-    </section>
-    <section class="main-content">
-        <center>
-            <img src="gvpngate.png" alt="Gvpngate" />
-        </center>
-        <h1><a id="-overview" class="anchor" href="#-overview" aria-hidden="true"></a> Overview</h1>
-        <p>Gvpngate is a VPN Gate frontend for Gnome Network Manager. Gvpngate will will create OpenVPN connection entries based on the vpn list provided by the VPN Gate project. For more information concerning the VPN Gate project please visit <a href="http://www.vpngate.net">www.vpngate.net</a>. Valid connections will remain in Gnome Network Manager, even after Gvpngate is closed. To remove connections created by Gvpngate, use Gnome's Network Settings dialog. Gvpngate is not required to be running to use the created connections.</p>
-        <h1><a id="-gvpngate-in-action" class="anchor" href="#-gvpngate-in-action" aria-hidden="true"></a> Gvpngate In Action</h1>
-        <p><img src="Gvpngate%20in%20action.png" alt="Gvpngate in Action.png" /> Gvpngate after vpn list has loaded</p>
-        <br />
-        <p><img src="Gvpngate%20with%20Gnome%20Network%20Manager.png" alt="Gvpngate with Gnome Network Manager.png" /> Gvpngate with Gnome Network Manager showing created connections</p>
-        <h1><a id="-runtime-requirements-------" class="anchor" href="#-runtime-requirements-------" aria-hidden="true"></a> Runtime Requirements</h1>
-        <p>Required Debian packages or your distro equivalent:</p>
-        <pre>
-<code>libgtk-3-0
+    <h1 class="project-name">Gvpngate</h1>
+    <h2 class="project-tagline">VPN Gate frontend for Gnome</h2>
+    <a href="https://github.com/Gwiz65/gvpngate/archive/v0.49.zip" class="btn">Download .zip</a> <a href="https://github.com/Gwiz65/gvpngate/archive/v0.49.tar.gz" class="btn">Download .tar.gz</a>
+    <br />
+    <a href="https://github.com/Gwiz65/gvpngate" class="btn">View on GitHub</a> <a href="https://github.com/Gwiz65/gvpngate/wiki" class="btn">Gvpngate Wiki</a> <a href="http://ost.io/@Gwiz65/gvpngate" class="btn">Gvpngate Forum</a>
+</section>
+<section class="main-content">
+    <center>
+        <img src="gvpngate.png" alt="Gvpngate" />
+    </center>
+    <h1><a id="-overview" class="anchor" href="#-overview" aria-hidden="true"></a> Overview</h1>
+    <p>Gvpngate is a VPN Gate frontend for Gnome Network Manager. Gvpngate will will create OpenVPN connection entries based on the vpn list provided by the VPN Gate project. For more information concerning the VPN Gate project please visit <a href="http://www.vpngate.net">www.vpngate.net</a>. Valid connections will remain in Gnome Network Manager, even after Gvpngate is closed. To remove connections created by Gvpngate, use Gnome's Network Settings dialog. Gvpngate is not required to be running to use the created connections.</p>
+    <h1><a id="-gvpngate-in-action" class="anchor" href="#-gvpngate-in-action" aria-hidden="true"></a> Gvpngate In Action</h1>
+    <p><img src="Gvpngate%20in%20action.png" alt="Gvpngate in Action.png" /> Gvpngate after vpn list has loaded</p>
+    <br />
+    <p><img src="Gvpngate%20with%20Gnome%20Network%20Manager.png" alt="Gvpngate with Gnome Network Manager.png" /> Gvpngate with Gnome Network Manager showing created connections</p>
+    <h1><a id="-runtime-requirements-------" class="anchor" href="#-runtime-requirements-------" aria-hidden="true"></a> Runtime Requirements</h1>
+    <p>Required Debian packages or your distro equivalent:</p>
+    <pre>
+        <code>libgtk-3-0
 libuuid1
 network_manager_openvpn_gnome
 wget
 coreutils
 findutils</code>
-</pre>
-        <h1><a id="-installation" class="anchor" href="#-installation" aria-hidden="true"></a> Installation</h1>
-        <p>Install required Debian packages or your distro equivalent:</p>
-        <pre>
-<code>autoconf
+    </pre>
+    <h1><a id="-installation" class="anchor" href="#-installation" aria-hidden="true"></a> Installation</h1>
+    <p>Install required Debian packages or your distro equivalent:</p>
+    <pre>
+        <code>autoconf
 libtool
 pkg-config
 libgtk-3-dev
 uuid-dev</code>
-</pre>
-        <p>Extract source archive to a directory, 'cd' to that directory and type:</p>
-        <pre>
-<code>autoreconf -i --force
+    </pre>
+    <p>Extract source archive to a directory, 'cd' to that directory and type:</p>
+    <pre>
+        <code>autoreconf -i --force
 ./configure
 make</code>
-</pre>
-        <p>As root type:</p>
-        <pre>
-<code>make install</code>
-</pre>
-        <p>To uninstall, as root type:</p>
-        <pre>
-<code>make uninstall</code>
-</pre>
-        <p>Run (as regular user) by typing:</p>
-        <pre>
-<code>gvpngate</code>
-</pre>
-        <p>or by selecting Gvpngate from the Applications-&gt;Internet menu</p>
-        <h1><a id="-using-gvpngate" class="anchor" href="#-using-gvpngate" aria-hidden="true"></a> Using Gvpngate</h1>
-        <p>Usage of Gvpngate is very straightforward. After the vpn list loads select a vpn from the list and create a Gnome Network Manager connection by selecting "Connect" from the menubar, pushing the "Connect" button or by double-clicking on an entry in the vpn list. Gvpngate will create the connection and attempt to connect to it. If the connection fails, Gvpngate will remove the connection from Gnome Network Manager. If the connection succeeds, the connection will remain available in Gnome Network Manager, even after Gvpngate is closed. To refresh the vpn list, select "Refresh" from the menubar or push the "Refresh" button. If downloading of the vpn list fails, Gvpngate will attempt to use a previously downloaded vpn list.</p>
-        <h1><a id="-certificate-files" class="anchor" href="#-certificate-files" aria-hidden="true"></a> Certificate Files</h1>
-        <p>The CA Certificate files for the created vpn connections are stored in a directory named ".gvpngate" in the current user's home directory. While Gvpngate need not be running to access the created connections, access to the ".gvpngate" directory is required. Gvpngate deletes any unused certificate files on shutdown.</p>
-        <h1><a id="-a-note-about-ipv6" class="anchor" href="#-a-note-about-ipv6" aria-hidden="true"></a> A note about IPv6</h1>
-        <p>The VPN Gate servers do not appear to support IPv6 at this time and as a result neither does Gvpngate. To avoid leaking your IPv6 address and/or your IPv6 DNS inquiries, I suggest following the recommendations at <a href="https://wiki.debian.org/DebianIPv6#How_to_turn_off_IPv6">https://wiki.debian.org/DebianIPv6#How_to_turn_off_IPv6</a> for Debian or a similar work-around for your distro.</p>
-        <br />
-        <p>Gvpngate was created and tested on the following system:</p>
-        <pre>
-<code> Linux Kernel:  3.2.0-4-amd64
+    </pre>
+    <p>As root type:</p>
+    <pre>
+        <code>make install</code>
+    </pre>
+    <p>To uninstall, as root type:</p>
+    <pre>
+        <code>make uninstall</code>
+    </pre>
+    <p>Run (as regular user) by typing:</p>
+    <pre>
+        <code>gvpngate</code>
+    </pre>
+    <p>or by selecting Gvpngate from the Applications-&gt;Internet menu</p>
+    <h1><a id="-using-gvpngate" class="anchor" href="#-using-gvpngate" aria-hidden="true"></a> Using Gvpngate</h1>
+    <p>Usage of Gvpngate is very straightforward. After the vpn list loads select a vpn from the list and create a Gnome Network Manager connection by selecting "Connect" from the menubar, pushing the "Connect" button or by double-clicking on an entry in the vpn list. Gvpngate will create the connection and attempt to connect to it. If the connection fails, Gvpngate will remove the connection from Gnome Network Manager. If the connection succeeds, the connection will remain available in Gnome Network Manager, even after Gvpngate is closed. To refresh the vpn list, select "Refresh" from the menubar or push the "Refresh" button. If downloading of the vpn list fails, Gvpngate will attempt to use a previously downloaded vpn list.</p>
+    <h1><a id="-certificate-files" class="anchor" href="#-certificate-files" aria-hidden="true"></a> Certificate Files</h1>
+    <p>The CA Certificate files for the created vpn connections are stored in a directory named ".gvpngate" in the current user's home directory. While Gvpngate need not be running to access the created connections, access to the ".gvpngate" directory is required. Gvpngate deletes any unused certificate files on shutdown.</p>
+    <h1><a id="-a-note-about-ipv6" class="anchor" href="#-a-note-about-ipv6" aria-hidden="true"></a> A note about IPv6</h1>
+    <p>The VPN Gate servers do not appear to support IPv6 at this time and as a result neither does Gvpngate. To avoid leaking your IPv6 address and/or your IPv6 DNS inquiries, I suggest following the recommendations at <a href="https://wiki.debian.org/DebianIPv6#How_to_turn_off_IPv6">https://wiki.debian.org/DebianIPv6#How_to_turn_off_IPv6</a> for Debian or a similar work-around for your distro.</p>
+    <br />
+    <p>Gvpngate was created and tested on the following system:</p>
+    <pre>
+        <code> Linux Kernel:  3.2.0-4-amd64
        Distro:  Debian GNU/Linux 7.9 (wheezy)
 Gnome Version:  3.4.2</code>
-</pre>
-        <footer class="site-footer">
-            <center>
-                <span class="site-footer-owner"><img src="gplv3-88x31.png" alt="GPLv3" /> Gvpngate is distributed under <a href="https://www.gnu.org/licenses/gpl.html">GNU General Public License Version 3</a><br />
-               <br />
-               <a href="https://github.com/Gwiz65/gvpngate">Gvpngate</a> is maintained by <a href="https://github.com/Gwiz65">Gwiz65</a></span>
-            </center>
-        </footer>
-    </section>
+    </pre>
+    <footer class="site-footer">
+        <center>
+            <span class="site-footer-owner"><img src="gplv3-88x31.png" alt="GPLv3" /> Gvpngate is distributed under <a href="https://www.gnu.org/licenses/gpl.html">GNU General Public License Version 3</a><br />
+            <br />
+            <a href="https://github.com/Gwiz65/gvpngate">Gvpngate</a> is maintained by <a href="https://github.com/Gwiz65">Gwiz65</a></span>
+        </center>
+    </footer>
+    <noscript>
+        <p<>Your browser appears to have javascript disabled. The only script in use on this page is to redirect your browser to the secure protocol version of this site (<a href="https://gwiz65.github.io/gvpngate/">https://gwiz65.github.io/gvpngate/</a>). You really should use the secure version of this site if you can.</p>
+    </noscript>
+</section>
 </body>
 
 </html>
