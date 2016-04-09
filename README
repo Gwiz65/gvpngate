@@ -35,7 +35,7 @@ required to be running to use the created connections.
 Required Debian packages or your distro equivalent:
 	 - libgtk-3-0
 	 - libuuid1
-	 - network_manager_openvpn_gnome
+	 - network-manager-openvpn-gnome
 	 - wget
 	 - coreutils
 	 - findutils
