@@ -438,6 +438,10 @@ gboolean CreateConnection (gpointer data)
 				// check for fail or exit status other than 0
 				if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 				{
+					// close connection file
+					if (connectfile != NULL) fclose(connectfile);
+					// remove connection file from workdir
+					if (stat(connectfile, &st) == 0) remove(connectfile);
 					Statusbar_Message("Gvpngate_suid failed to delete system file. This sucks.");
 					return(FALSE);
 				}
@@ -460,6 +464,10 @@ gboolean CreateConnection (gpointer data)
 			// check for fail or exit status other than 0
 			if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 			{
+				// close connection file
+				if (connectfile != NULL) fclose(connectfile);
+				// remove connection file from workdir
+				if (stat(connectfile, &st) == 0) remove(connectfile);
 				Statusbar_Message("Failed to get list of current connections. This sucks.");
 				return(FALSE);
 			}
@@ -479,6 +487,10 @@ gboolean CreateConnection (gpointer data)
 				statusfile = fopen(tempstr, "r");
 				if (statusfile == NULL)
 				{
+					// close connection file
+					if (connectfile != NULL) fclose(connectfile);
+					// remove connection file from workdir
+					if (stat(connectfile, &st) == 0) remove(connectfile);
 					Statusbar_Message("Unable to read status file. This sucks.");
 					return(FALSE);
 				}
@@ -569,8 +581,10 @@ gboolean CreateConnection (gpointer data)
 	// check for fail or exit status other than 0
 	if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 	{
-		Statusbar_Message(
-		             "Gvpngate_suid failed to copy connection file. This sucks.");
+		// remove connection file from workdir
+		cmdstr = g_strconcat(WorkDir, "/", vpnname, NULL);
+		if (stat(cmdstr, &st) == 0) remove(cmdstr);
+		Statusbar_Message("Gvpngate_suid failed to copy connection file. This sucks.");
 		return(FALSE);
 	}
 	// remove connection file from workdir
