@@ -33,12 +33,15 @@ required to be running to use the created connections.
  Runtime Requirements		
 ======================
 Required Debian packages or your distro equivalent:
-	 - libgtk-3-0
-	 - libuuid1
-	 - network-manager-openvpn-gnome
-	 - wget
-	 - coreutils
-	 - findutils
+	- libgtk-3-0
+	- libatk-adaptor
+	- libuuid1
+	- network-manager
+	- network-manager-gnome
+	- network-manager-openvpn-gnome
+	- wget
+	- findutils
+
 
  Installation
 ==============
@@ -100,4 +103,3 @@ Gvpngate was created and tested on the following system:
 	 Linux Kernel:	3.2.0-4-amd64
 	       Distro:	Debian GNU/Linux 7.9 (wheezy)
 	Gnome Version:	3.4.2
-
