@@ -46,11 +46,11 @@ Required Debian packages or your distro equivalent:
  Installation
 ==============
 Install required Debian packages or your distro equivalent:
-	 - autoconf
-	 - libtool
-	 - pkg-config
-	 - libgtk-3-dev
-	 - uuid-dev
+	- autoconf
+	- libtool
+	- pkg-config
+	- libgtk-3-dev
+	- uuid-dev
 
 Extract source archive to a directory and 'cd' to that directory and type:
 	'autoreconf -i --force'

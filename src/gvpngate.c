@@ -438,11 +438,15 @@ gboolean CreateConnection (gpointer data)
 				// check for fail or exit status other than 0
 				if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 				{
+					gchar *tmpexitstr = NULL;
+					
 					// close connection file
 					if (connectfile != NULL) fclose(connectfile);
 					// remove connection file from workdir
-					if (stat(connectfile, &st) == 0) remove(connectfile);
+					tmpexitstr = g_strconcat(WorkDir, "/", vpnname, NULL);
+					if (stat(tmpexitstr, &st) == 0) remove(tmpexitstr);
 					Statusbar_Message("Gvpngate_suid failed to delete system file. This sucks.");
+					g_free(tmpexitstr);
 					return(FALSE);
 				}
 				sleep(1);
@@ -464,11 +468,15 @@ gboolean CreateConnection (gpointer data)
 			// check for fail or exit status other than 0
 			if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 			{
+				gchar *tmpexitstr = NULL;
+
 				// close connection file
 				if (connectfile != NULL) fclose(connectfile);
 				// remove connection file from workdir
-				if (stat(connectfile, &st) == 0) remove(connectfile);
+				tmpexitstr = g_strconcat(WorkDir, "/", vpnname, NULL);
+				if (stat(tmpexitstr, &st) == 0) remove(tmpexitstr);
 				Statusbar_Message("Failed to get list of current connections. This sucks.");
+				g_free(tmpexitstr);
 				return(FALSE);
 			}
 			// get next available nm id name
@@ -487,11 +495,15 @@ gboolean CreateConnection (gpointer data)
 				statusfile = fopen(tempstr, "r");
 				if (statusfile == NULL)
 				{
+					gchar *tmpexitstr = NULL;
+
 					// close connection file
 					if (connectfile != NULL) fclose(connectfile);
 					// remove connection file from workdir
-					if (stat(connectfile, &st) == 0) remove(connectfile);
+					tmpexitstr = g_strconcat(WorkDir, "/", vpnname, NULL);
+					if (stat(tmpexitstr, &st) == 0) remove(tmpexitstr);
 					Statusbar_Message("Unable to read status file. This sucks.");
+					g_free(tmpexitstr);
 					return(FALSE);
 				}
 				else
