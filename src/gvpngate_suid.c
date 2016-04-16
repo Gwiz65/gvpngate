@@ -28,6 +28,12 @@ int main ( int argc, char *argv[] )
 {
 	switch (argc) 		
 	{
+		case 1:
+		{
+			// no args - send reload
+			system("nmcli con reload");
+			break;
+		}
 		case 2:
 		{
 			// only one filename - delete it

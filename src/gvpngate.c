@@ -42,6 +42,94 @@ int main (int argc, char *argv[]);
 
 /****************************************************************************
  *                                                                          *
+ * Function: Check_nmcli_Version                                            *
+ *                                                                          *
+ * Purpose : See if we are running nmcli 0.9.10.0 or higher                 *
+ *           returns true if 9.10 or higher, false otherwise                *
+ *                                                                          *
+ ****************************************************************************/
+gboolean Check_nmcli_Version(void)
+{
+	gboolean func_ret = FALSE;
+	gchar *cmdstr = NULL;
+	gint ret = 0;
+	gint status;
+	pid_t pid;
+	
+	cmdstr = g_strconcat(WorkDir, "/status", NULL);
+	ret = 0;
+	pid = fork();
+	if (pid == 0)
+	{
+		int fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+		dup2(fd, STDOUT_FILENO);   // make stdout go to status file
+		close(fd);
+		execlp("nmcli", "nmcli", "-v", NULL);
+		_exit(EXIT_FAILURE);
+	}
+	else if (pid < 0) ret = -1;
+	else if (waitpid (pid, &status, 0) != pid)  ret = -1;
+	// check for fail or exit status other than 0
+	if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
+	{
+		// return true on failure because odds are most have newer distros
+		func_ret= TRUE;
+	}
+	else
+	{
+		FILE *statusfile;
+		gchar *line = NULL;
+		gchar *tempstr = NULL;
+		size_t len = 0;
+		size_t read;
+		gchar *token1 = NULL;
+		gchar *token2 = NULL;
+		gchar *token3 = NULL;
+
+		tempstr = g_strconcat(WorkDir, "/status", NULL);
+		statusfile = fopen(tempstr, "r");
+		if (statusfile != NULL)
+		{
+			// getline loop
+			while ((read = getline(&line, &len, statusfile)) != -1) 
+			{
+				gint pos = 20;
+				gint ctr = 1;
+
+				//get token1
+				while (line[ctr+pos] != '.') ctr++;
+				token1 = g_strndup (line+pos, ctr);
+				pos = pos + ctr + 1;
+				//get token2
+				ctr = 1;
+				while (line[ctr+pos] != '.') ctr++;
+				token2 = g_strndup (line+pos, ctr);
+				pos = pos + ctr + 1;
+				//get token3
+				ctr = 1;
+				while (line[ctr+pos] != '.') ctr++;
+				token3 = g_strndup (line+pos, ctr);
+				//check version
+				if (atoi(token1) > 0) ret = TRUE;
+				if ((atoi(token1) == 0) && (atoi(token2) > 9)) func_ret = TRUE;
+				if ((atoi(token1) == 0) && (atoi(token2) == 9) &&
+				    (atoi(token3) > 8)) func_ret = TRUE;
+			}
+		}
+		// close file
+		if (statusfile != NULL) fclose(statusfile);
+		g_free(line);
+		g_free(tempstr);
+		g_free(token1);
+		g_free(token2);
+		g_free(token3);
+	}
+	g_free(cmdstr);
+	return func_ret;
+}
+
+/****************************************************************************
+ *                                                                          *
  * Function: ShowAboutDialog                                                *
  *                                                                          *
  * Purpose :                                                                *
@@ -407,7 +495,7 @@ gboolean CreateConnection (gpointer data)
 		if (connectfile == NULL)
 		{
 			Statusbar_Message("Unable to write temp connection file. This sucks.");
-			return(FALSE);
+			return FALSE;
 		}
 		else
 		{
@@ -447,7 +535,22 @@ gboolean CreateConnection (gpointer data)
 					if (stat(tmpexitstr, &st) == 0) remove(tmpexitstr);
 					Statusbar_Message("Gvpngate_suid failed to delete system file. This sucks.");
 					g_free(tmpexitstr);
-					return(FALSE);
+					return FALSE;
+				}
+				// send reload
+				if (b_is_new_nmcli)
+				{
+					// use gvpngate_suid to send reload
+					ret = 0;
+					pid = fork();
+					
+					if (pid == 0)
+					{
+						execlp("gvpngate_suid", "gvpngate_suid", NULL);
+						_exit(EXIT_FAILURE);
+					}
+					else if (pid < 0) ret = -1;
+					else if (waitpid (pid, &status, 0) != pid)  ret = -1;
 				}
 				sleep(1);
 			}
@@ -477,7 +580,7 @@ gboolean CreateConnection (gpointer data)
 				if (stat(tmpexitstr, &st) == 0) remove(tmpexitstr);
 				Statusbar_Message("Failed to get list of current connections. This sucks.");
 				g_free(tmpexitstr);
-				return(FALSE);
+				return FALSE;
 			}
 			// get next available nm id name
 			while(!bValidName)
@@ -504,7 +607,7 @@ gboolean CreateConnection (gpointer data)
 					if (stat(tmpexitstr, &st) == 0) remove(tmpexitstr);
 					Statusbar_Message("Unable to read status file. This sucks.");
 					g_free(tmpexitstr);
-					return(FALSE);
+					return FALSE;
 				}
 				else
 				{
@@ -597,7 +700,7 @@ gboolean CreateConnection (gpointer data)
 		cmdstr = g_strconcat(WorkDir, "/", vpnname, NULL);
 		if (stat(cmdstr, &st) == 0) remove(cmdstr);
 		Statusbar_Message("Gvpngate_suid failed to copy connection file. This sucks.");
-		return(FALSE);
+		return FALSE;
 	}
 	// remove connection file from workdir
 	cmdstr = g_strconcat(WorkDir, "/", vpnname, NULL);
@@ -611,7 +714,11 @@ gboolean CreateConnection (gpointer data)
 		int fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
 		dup2(fd, STDOUT_FILENO);   // make stdout go to status file
 		close(fd);
-		execlp("nmcli", "nmcli", "-t", "-f", "NAME,VPN", "con", "status", NULL);
+		if (b_is_new_nmcli)
+			execlp("nmcli", "nmcli", "-t", "-f", "NAME,TYPE", "con", "show", 
+			       "--active", NULL);
+		else
+			execlp("nmcli", "nmcli", "-t", "-f", "NAME,VPN", "con", "status", NULL);
 		_exit(EXIT_FAILURE);
 	}
 	else if (pid < 0) ret = -1;
@@ -620,7 +727,7 @@ gboolean CreateConnection (gpointer data)
 	if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 	{
 		Statusbar_Message("Failed to get running connection list. This sucks.");
-		return(FALSE);
+		return FALSE;
 	}
 	else
 	{
@@ -662,8 +769,8 @@ gboolean CreateConnection (gpointer data)
 				if (line[ctr+pos] == '\0') ctr--;
 				if (line[ctr+pos] == '\n') ctr--;
 				token2 = g_strndup (line+pos, ctr+1);
-				if (!strncmp(token2, "yes", 3))
-				{
+				if ((!strncmp(token2, "yes", 3)) || (!strncmp(token2, "vpn", 3)))
+				    {
 					// kill the vpn connection
 					ret = 0;
 					pid = fork();
@@ -678,7 +785,7 @@ gboolean CreateConnection (gpointer data)
 					if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 					{
 						Statusbar_Message("Failed to kill running connection. This sucks.");
-						return(FALSE);
+						return FALSE;
 					}
 					sleep(1);
 				}
@@ -692,6 +799,21 @@ gboolean CreateConnection (gpointer data)
 		g_free(tempstr);
 	}
 	sleep(1);
+	// send reload
+	if (b_is_new_nmcli)
+	{
+		// use gvpngate_suid to send reload
+		ret = 0;
+		pid = fork();
+		
+		if (pid == 0)
+		{
+			execlp("gvpngate_suid", "gvpngate_suid", NULL);
+			_exit(EXIT_FAILURE);
+		}
+		else if (pid < 0) ret = -1;
+		else if (waitpid (pid, &status, 0) != pid)  ret = -1;
+	}
 	// fire up the new connection
 	ret = 0;
 	pid = fork();
@@ -737,7 +859,7 @@ gboolean CreateConnection (gpointer data)
 		else
 		{
 			Statusbar_Message("Failed to remove vpn connection. This sucks.");
-			return(FALSE);
+			return FALSE;
 		}
 	}
 	g_free(cmdstr);
@@ -750,7 +872,7 @@ gboolean CreateConnection (gpointer data)
 	g_free(protocol);
 	g_free(nm_id);   
 	g_free(filestr);
-	return(FALSE);
+	return FALSE;
 }
 
 /****************************************************************************
@@ -825,7 +947,7 @@ gboolean Get_Vpn_List_File(gpointer data)
 		else 
 		{
 			Statusbar_Message("Vpn list download has completely failed.");
-			return(FALSE);
+			return FALSE;
 		}
 	}
 	// open vpn list file
@@ -834,7 +956,7 @@ gboolean Get_Vpn_List_File(gpointer data)
 	if (vpnlistfile == NULL)
 	{
 		Statusbar_Message("Unable to read VPN list. This sucks.");
-		return(FALSE);
+		return FALSE;
 	}
 	else
 	{
@@ -1011,7 +1133,7 @@ gboolean Get_Vpn_List_File(gpointer data)
 	if (vpnlistfile != NULL) fclose(vpnlistfile);
 	g_free(line);
 	g_free(tempstr);
-	return(FALSE);
+	return FALSE;
 }
 
 /****************************************************************************
@@ -1195,6 +1317,8 @@ int main (int argc, char *argv[])
 	WorkDir = g_strconcat (g_get_home_dir (), "/.gvpngate", NULL);
 	// make sure work directory exists
 	if (stat(WorkDir, &st) == -1) mkdir(WorkDir, 0700);
+	// check nmcli version
+	b_is_new_nmcli = Check_nmcli_Version();
 	// create main window
 	MainWindow = Create_Main_Window ();
 	// show main window

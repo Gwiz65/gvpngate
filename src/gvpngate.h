@@ -34,7 +34,7 @@
 #define UI_FILE PACKAGE_DATA_DIR"/ui/gvpngate.ui"
 //#define UI_FILE "src/gvpngate.ui"
 
-#define GVPNGATE_VERSION "0.50"
+#define GVPNGATE_VERSION "0.51"
 
 /****************************
  *      Global Vars         *
@@ -48,6 +48,7 @@ GtkWidget *MainWin_Info_3;
 GtkWidget *MainWin_Info_4;
 GtkWidget *MainWin_Menu_Connect;
 GtkWidget *AboutBox;
+gboolean b_is_new_nmcli;
 
 /****************************
  * Global Function Declares *
