@@ -39,6 +39,7 @@ GtkListStore *VPN_List;
 void Destroy_Main_Window (GtkWidget*, gpointer);
 GtkWidget* Create_Main_Window (void);
 int main (int argc, char *argv[]);
+gboolean Check_nmcli_Version(void);
 
 /****************************************************************************
  *                                                                          *
@@ -107,10 +108,10 @@ gboolean Check_nmcli_Version(void)
 				pos = pos + ctr + 1;
 				//get token3
 				ctr = 1;
-				while (line[ctr+pos] != '.') ctr++;
+				while ((line[ctr+pos] != '.') && (line[ctr+pos] != '\n')) ctr++;
 				token3 = g_strndup (line+pos, ctr);
 				//check version
-				if (atoi(token1) > 0) ret = TRUE;
+				if (atoi(token1) > 0) func_ret = TRUE;
 				if ((atoi(token1) == 0) && (atoi(token2) > 9)) func_ret = TRUE;
 				if ((atoi(token1) == 0) && (atoi(token2) == 9) &&
 				    (atoi(token3) > 8)) func_ret = TRUE;
