@@ -552,6 +552,19 @@ gboolean CreateConnection (gpointer data)
 					}
 					else if (pid < 0) ret = -1;
 					else if (waitpid (pid, &status, 0) != pid)  ret = -1;
+					// check for fail or exit status other than 0
+					if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
+					{
+						gchar *tmpexitstr = NULL;
+						// close connection file
+						if (connectfile != NULL) fclose(connectfile);
+						// remove connection file from workdir
+						tmpexitstr = g_strconcat(WorkDir, "/", vpnname, NULL);
+						if (stat(tmpexitstr, &st) == 0) remove(tmpexitstr);
+						Statusbar_Message("Failed reload connections. This sucks.");
+						g_free(tmpexitstr);
+						return FALSE;
+					}
 				}
 				sleep(1);
 			}
@@ -777,6 +790,11 @@ gboolean CreateConnection (gpointer data)
 					pid = fork();
 					if (pid == 0)
 					{
+						// suppress output from nmcli
+						int fd =  open("/dev/null", O_RDWR); 
+						dup2(fd, STDOUT_FILENO);   // make stdout go to null file
+						dup2(fd, STDERR_FILENO);   // make stderr go to null file
+						close(fd);
 						execlp("nmcli", "nmcli", "con", "down", "id", token1, NULL);
 						_exit(EXIT_FAILURE);
 					}
@@ -814,6 +832,12 @@ gboolean CreateConnection (gpointer data)
 		}
 		else if (pid < 0) ret = -1;
 		else if (waitpid (pid, &status, 0) != pid)  ret = -1;
+		// check for fail or exit status other than 0
+		if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
+		{
+			Statusbar_Message("Failed reload connections. This sucks.");
+			return FALSE;
+		}
 	}
 	// fire up the new connection
 	ret = 0;
@@ -846,6 +870,11 @@ gboolean CreateConnection (gpointer data)
 		pid = fork();
 		if (pid == 0)
 		{
+			// suppress output from nmcli
+			int fd =  open("/dev/null", O_RDWR); 
+			dup2(fd, STDOUT_FILENO);   // make stdout go to null file
+			dup2(fd, STDERR_FILENO);   // make stderr go to null file
+			close(fd);
 			execlp("nmcli", "nmcli", "con", "delete", "id", nm_id, NULL);
 			_exit(EXIT_FAILURE);
 		}
@@ -854,6 +883,27 @@ gboolean CreateConnection (gpointer data)
 		// check for fail or exit status other than 0
 		if ((!ret) && WIFEXITED(status) && !WEXITSTATUS(status))
 		{
+			// send reload
+			if (b_is_new_nmcli)
+			{
+				// use gvpngate_suid to send reload
+				ret = 0;
+				pid = fork();
+				
+				if (pid == 0)
+				{
+					execlp("gvpngate_suid", "gvpngate_suid", NULL);
+					_exit(EXIT_FAILURE);
+				}
+				else if (pid < 0) ret = -1;
+				else if (waitpid (pid, &status, 0) != pid)  ret = -1;
+				// check for fail or exit status other than 0
+				if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
+				{
+					Statusbar_Message("Failed reload connections. This sucks.");
+					return FALSE;
+				}
+			}
 			sleep(1);
 			Statusbar_Message("Connection failed.  VPN has been removed from Network Manager.");
 		}

@@ -23,6 +23,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
  
 int main ( int argc, char *argv[] )
 {
@@ -30,8 +31,25 @@ int main ( int argc, char *argv[] )
 	{
 		case 1:
 		{
-			// no args - send reload
-			system("nmcli con reload");
+			int ret = 0;
+			int status;
+			pid_t pid;
+
+			pid = fork();
+			if (pid == 0)
+			{
+				execlp("nmcli", "nmcli", "con", "reload", NULL);
+				_exit(EXIT_FAILURE);
+			}
+			else if (pid < 0) ret = -1;
+			else if (waitpid (pid, &status, 0) != pid)  ret = -1;
+			// check for fail or exit status other than 0
+			if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
+			{
+				printf("gvpngate_suid: Unable reload connections.");
+				printf("\n");
+				return 1;
+			}
 			break;
 		}
 		case 2:
@@ -39,7 +57,8 @@ int main ( int argc, char *argv[] )
 			// only one filename - delete it
 			if (remove(argv[1])) 
 			{
-				printf("Unable to delete system connection file.");
+				printf("gvpngate_suid: Unable to delete system connection file.");
+				printf("\n");
 				return 1;
 			}
 			break;
@@ -64,26 +83,30 @@ int main ( int argc, char *argv[] )
 				// change owner and group to root
 				if (chown(argv[2], 0, 0)) 
 				{
-					printf("Unable to set ownership of system connection file.");
+					printf("gvpngate_suid: Unable to set ownership of system connection file.");
+					printf("\n");
 					return 1;
 				}
 				// set permissions
 				if (chmod(argv[2], strtol("0600", 0, 8))) 
 				{
-					printf("Unable to set permissions of system connection file.");
+					printf("gvpngate_suid: Unable to set permissions of system connection file.");
+				    printf("\n");					
 					return 1;
 				}
 			}
 			else
 			{
-				printf("Unable to create system connection file.");
+				printf("gvpngate_suid: Unable to create system connection file.");
+				printf("\n");
 				return 1;
 			}
 			break; 
 		}
 		default:
 		{
-			printf("Incorrect arguments passed to gvpngate_suid");
+			printf("gvpngate_suid: Incorrect number of arguments.");
+			printf("\n");
 			return 1;
 		}
 	}
