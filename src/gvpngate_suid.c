@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
  
@@ -38,6 +39,10 @@ int main ( int argc, char *argv[] )
 			pid = fork();
 			if (pid == 0)
 			{
+				int fd_null =  open("/dev/null", O_RDWR); 
+				dup2(fd_null, STDOUT_FILENO);	// make stdout go to null file
+				dup2(fd_null, STDERR_FILENO); 	// make stderr go to null file
+				close(fd_null);
 				execlp("nmcli", "nmcli", "con", "reload", NULL);
 				_exit(EXIT_FAILURE);
 			}

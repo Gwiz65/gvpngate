@@ -62,9 +62,14 @@ gboolean Check_nmcli_Version(void)
 	pid = fork();
 	if (pid == 0)
 	{
-		int fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
-		dup2(fd, STDOUT_FILENO);   // make stdout go to status file
+		int fd, fd_null;
+
+		fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+		fd_null =  open("/dev/null", O_RDWR); 
+		dup2(fd, STDOUT_FILENO);   		// make stdout go to status file
+		dup2(fd_null, STDERR_FILENO);	// make stderr go to null file
 		close(fd);
+		close(fd_null);
 		execlp("nmcli", "nmcli", "-v", NULL);
 		_exit(EXIT_FAILURE);
 	}
@@ -574,9 +579,14 @@ gboolean CreateConnection (gpointer data)
 			pid = fork();
 			if (pid == 0)
 			{
-				int fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
-				dup2(fd, STDOUT_FILENO);   // make stdout go to status file
+				int fd, fd_null;
+
+				fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+				fd_null =  open("/dev/null", O_RDWR); 
+				dup2(fd, STDOUT_FILENO);   		// make stdout go to status file
+				dup2(fd_null, STDERR_FILENO);	// make stderr go to null file
 				close(fd);
+				close(fd_null);
 				execlp("nmcli", "nmcli", "-t", "-f", "NAME,TYPE", "con", NULL);
 				_exit(EXIT_FAILURE);
 			}
@@ -725,9 +735,14 @@ gboolean CreateConnection (gpointer data)
 	pid = fork();
 	if (pid == 0)
 	{
-		int fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
-		dup2(fd, STDOUT_FILENO);   // make stdout go to status file
+		int fd, fd_null;
+
+		fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+		fd_null =  open("/dev/null", O_RDWR); 
+		dup2(fd, STDOUT_FILENO);   		// make stdout go to status file
+		dup2(fd_null, STDERR_FILENO);	// make stderr go to null file
 		close(fd);
+		close(fd_null);
 		if (b_is_new_nmcli)
 			execlp("nmcli", "nmcli", "-t", "-f", "NAME,TYPE", "con", "show", 
 			       "--active", NULL);
@@ -790,11 +805,10 @@ gboolean CreateConnection (gpointer data)
 					pid = fork();
 					if (pid == 0)
 					{
-						// suppress output from nmcli
-						int fd =  open("/dev/null", O_RDWR); 
-						dup2(fd, STDOUT_FILENO);   // make stdout go to null file
-						dup2(fd, STDERR_FILENO);   // make stderr go to null file
-						close(fd);
+						int fd_null =  open("/dev/null", O_RDWR); 
+						dup2(fd_null, STDOUT_FILENO);   // make stdout go to null file
+						dup2(fd_null, STDERR_FILENO);   // make stderr go to null file
+						close(fd_null);
 						execlp("nmcli", "nmcli", "con", "down", "id", token1, NULL);
 						_exit(EXIT_FAILURE);
 					}
@@ -844,11 +858,10 @@ gboolean CreateConnection (gpointer data)
 	pid = fork();
 	if (pid == 0)
 	{
-		// suppress output from nmcli
-		int fd =  open("/dev/null", O_RDWR); 
-		dup2(fd, STDOUT_FILENO);   // make stdout go to null file
-		dup2(fd, STDERR_FILENO);   // make stderr go to null file
-		close(fd);
+		int fd_null =  open("/dev/null", O_RDWR); 
+		dup2(fd_null, STDOUT_FILENO);	// make stdout go to null file
+		dup2(fd_null, STDERR_FILENO); 	// make stderr go to null file
+		close(fd_null);
 		execlp("nmcli", "nmcli", "con", "up", "id", nm_id, NULL);
 		_exit(EXIT_FAILURE);
 	}
@@ -870,11 +883,10 @@ gboolean CreateConnection (gpointer data)
 		pid = fork();
 		if (pid == 0)
 		{
-			// suppress output from nmcli
-			int fd =  open("/dev/null", O_RDWR); 
-			dup2(fd, STDOUT_FILENO);   // make stdout go to null file
-			dup2(fd, STDERR_FILENO);   // make stderr go to null file
-			close(fd);
+			int fd_null =  open("/dev/null", O_RDWR); 
+			dup2(fd_null, STDOUT_FILENO);   // make stdout go to null file
+			dup2(fd_null, STDERR_FILENO);   // make stderr go to null file
+			close(fd_null);
 			execlp("nmcli", "nmcli", "con", "delete", "id", nm_id, NULL);
 			_exit(EXIT_FAILURE);
 		}
@@ -966,6 +978,10 @@ gboolean Get_Vpn_List_File(gpointer data)
 	pid = fork();
 	if (pid == 0)
 	{
+		int fd_null =  open("/dev/null", O_RDWR); 
+		dup2(fd_null, STDOUT_FILENO);   // make stdout go to null file
+		dup2(fd_null, STDERR_FILENO);   // make stderr go to null file
+		close(fd_null);
 		execlp("wget", "wget", tempstr, "--quiet", "--timeout=20", 
 		       "http://www.vpngate.net/api/iphone/", NULL);
 		_exit(EXIT_FAILURE);
@@ -1207,9 +1223,14 @@ void Destroy_Main_Window (GtkWidget *widget, gpointer data)
 	pid = fork();
 	if (pid == 0)
 	{
-		int fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
-		dup2(fd, STDOUT_FILENO);   // make stdout go to status file
+		int fd, fd_null;
+
+		fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+		fd_null =  open("/dev/null", O_RDWR); 
+		dup2(fd, STDOUT_FILENO);   		// make stdout go to status file
+		dup2(fd_null, STDERR_FILENO);	// make stderr go to null file
 		close(fd);
+		close(fd_null);
 		execlp("find", "find", WorkDir, "-name", "*.crt", "-printf", "%P\n", NULL);
 		_exit(EXIT_FAILURE);
 	}

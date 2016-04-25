@@ -64,7 +64,7 @@ To uninstall, as root type:
 	'make uninstall'
 
 Run (as regular user) by typing: 'gvpngate'
-	or by selecting Gvpngate from the Applications->Internet menu
+	or by selecting Gvpngate from the Applications menu or in Dash.
 
 
  Using Gvpngate
@@ -99,7 +99,7 @@ https://wiki.debian.org/DebianIPv6#How_to_turn_off_IPv6 for Debian or a
 similar work-around for your distro.
 
 
-Gvpngate was created and tested on the following system:
+Gvpngate was created on the following system:
 	 Linux Kernel:	3.2.0-4-amd64
 	       Distro:	Debian GNU/Linux 7.9 (wheezy)
 	Gnome Version:	3.4.2
