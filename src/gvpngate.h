@@ -34,27 +34,14 @@
 #define UI_FILE PACKAGE_DATA_DIR"/ui/gvpngate.ui"
 //#define UI_FILE "src/gvpngate.ui"
 
-#define GVPNGATE_VERSION "0.53"
-
-/****************************
- *      Global Vars         *
- ****************************/
-gchar *WorkDir;
-GtkWidget *VPN_List_Treeview;
-GtkWidget *MainWin_TB_Connect;
-GtkWidget *MainWin_Info_1;
-GtkWidget *MainWin_Info_2;
-GtkWidget *MainWin_Info_3;
-GtkWidget *MainWin_Info_4;
-GtkWidget *MainWin_Menu_Connect;
-GtkWidget *AboutBox;
-gboolean b_is_new_nmcli;
+// define version
+#define GVPNGATE_VERSION "0.54"
 
 /****************************
  * Global Function Declares *
  ****************************/
+void ShowAboutDialog (void);
+void VpnListSelectionChanged (void);
+gboolean CreateConnection (gpointer);
 void Statusbar_Message(gchar*);
 gboolean Get_Vpn_List_File(gpointer);
-gboolean CreateConnection (gpointer);
-void VpnListSelectionChanged (void);
-void ShowAboutDialog (void);

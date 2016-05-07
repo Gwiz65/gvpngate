@@ -29,17 +29,63 @@ struct stat st = {0};
  *       Variables          *
  ****************************/
 guint  MainWin_StatusBarID;
+gchar *WorkDir;
+gchar *certdir;
+gboolean b_is_new_nmcli;
+gboolean b_selinux_enabled;
 GtkWidget *MainWindow;
 GtkWidget *MainWin_StatusBar;
+GtkWidget *VPN_List_Treeview;
+GtkWidget *MainWin_TB_Connect;
+GtkWidget *MainWin_Info_1;
+GtkWidget *MainWin_Info_2;
+GtkWidget *MainWin_Info_3;
+GtkWidget *MainWin_Info_4;
+GtkWidget *MainWin_Menu_Connect;
+GtkWidget *AboutBox;
 GtkListStore *VPN_List;
 
 /****************************
  *    Function Declares     *
  ****************************/
-void Destroy_Main_Window (GtkWidget*, gpointer);
+gboolean Check_SElinux(void);
+gboolean Check_nmcli_Version(void);
+void Destroy_Main_Window (GtkWidget*,gpointer);
 GtkWidget* Create_Main_Window (void);
 int main (int argc, char *argv[]);
-gboolean Check_nmcli_Version(void);
+
+/****************************************************************************
+ *                                                                          *
+ * Function: Check_SElinux                                                  *
+ *                                                                          *
+ * Purpose : See if we are running SELinux                                  *
+ *           returns true if enabled, false otherwise                       *
+ *                                                                          *
+ ****************************************************************************/
+gboolean Check_SElinux(void)
+{
+	int ret = 0;
+	int status;
+	pid_t pid;
+
+	// check for selinux
+	pid = fork();
+	if (pid == 0)
+	{
+		int fd_null =  open("/dev/null", O_RDWR); 
+		dup2(fd_null, STDOUT_FILENO);	// make stdout go to null file
+		dup2(fd_null, STDERR_FILENO); 	// make stderr go to null file
+		close(fd_null);
+		execlp("selinuxenabled", "selinuxenabled", NULL);
+		_exit(EXIT_FAILURE);
+	}
+	else if (pid < 0) ret = -1;
+	else if (waitpid (pid, &status, 0) != pid) ret = -1;
+	if ((!ret) && WIFEXITED(status) && !WEXITSTATUS(status))
+		return TRUE;
+	else
+		return FALSE;
+}		
 
 /****************************************************************************
  *                                                                          *
@@ -482,15 +528,52 @@ gboolean CreateConnection (gpointer data)
 			g_free(line);
 		}
 		// close crt file
-		if (crtfile != NULL) fclose(crtfile);			
+		if (crtfile != NULL) fclose(crtfile);
+		// set crt file label for SELinux
+		if (b_selinux_enabled)
+		{
+			gchar *workdir_crt = NULL;
+			gchar *certdir_crt = NULL;
+
+			workdir_crt = g_strconcat(WorkDir, "/", vpnname, ".crt", NULL);
+			certdir_crt = g_strconcat(certdir, "/", vpnname, ".crt", NULL);
+			// copy crt to ~/.cert so it gets home_cert_t label
+			ret = 0;
+			pid = fork();
+			if (pid == 0)
+			{
+				execlp("cp", "cp", "-f", workdir_crt, certdir_crt, NULL);
+				_exit(EXIT_FAILURE);
+			}
+			else if (pid < 0) ret = -1;
+			else if (waitpid (pid, &status, 0) != pid)  ret = -1;
+			// check for fail or exit status other than 0
+			if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
+			{
+				Statusbar_Message("Failed to set SELinux label for certificate file. This sucks.");
+				return FALSE;
+			}
+			// move crt back to out home directory so we can manage it
+			ret = 0;
+			pid = fork();
+			if (pid == 0)
+			{
+				execlp("mv", "mv", "-f", certdir_crt, workdir_crt, NULL);
+				_exit(EXIT_FAILURE);
+			}
+			else if (pid < 0) ret = -1;
+			else if (waitpid (pid, &status, 0) != pid)  ret = -1;
+			// check for fail or exit status other than 0
+			if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
+			{
+				Statusbar_Message("Failed to set SELinux label for certificate file. This sucks.");
+				return FALSE;
+			}
+			g_free(workdir_crt);
+			g_free(certdir_crt);
+		}			
 		g_free(decoded);
 		g_free(config_data);
-	}
-	else
-	{
-		// no row selected
-		// this shouldn't happen since connect button is only lit when
-		// a row is selected
 	}
 	// create a connection file in the work directory
 	{
@@ -1299,6 +1382,8 @@ void Destroy_Main_Window (GtkWidget *widget, gpointer data)
 	gtk_widget_destroy (AboutBox);
 	// release global strings
 	g_free(WorkDir);
+	g_free(certdir);
+	
 	// release local string
 	g_free(cmdstr);
 	// kill the main loop
@@ -1391,6 +1476,15 @@ int main (int argc, char *argv[])
 	if (stat(WorkDir, &st) == -1) mkdir(WorkDir, 0700);
 	// check nmcli version
 	b_is_new_nmcli = Check_nmcli_Version();
+	// check for selinux
+	b_selinux_enabled = Check_SElinux();
+	if (b_selinux_enabled)
+	{
+		// set the cert dir path
+		certdir = g_strconcat (g_get_home_dir (), "/.cert", NULL);
+		// make sure cert dir exists
+		if (stat(certdir, &st) == -1) mkdir(certdir, 0700);
+	}
 	// create main window
 	MainWindow = Create_Main_Window ();
 	// show main window
@@ -1401,3 +1495,15 @@ int main (int argc, char *argv[])
 	gtk_main ();
 	return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+

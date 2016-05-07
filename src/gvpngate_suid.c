@@ -73,7 +73,7 @@ int main ( int argc, char *argv[] )
 			FILE *src;
 			FILE *dst;
 
-			// We assume argv[1] is the source and argv[1] is the dest 
+			// We assume argv[1] is the source and argv[2] is the dest 
 			src = fopen(argv[1], "r");
 			dst = fopen(argv[2], "w");
 			if ((src != NULL) && (dst != NULL))

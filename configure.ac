@@ -20,7 +20,7 @@ dnl * You should have received a copy of the GNU General Public License along *
 dnl * with this program.  If not, see <https://www.gnu.org/licenses/>.        *
 dnl *                                                                         * 
 dnl ***************************************************************************/
-AC_INIT(gvpngate, 0.53)
+AC_INIT(gvpngate, 0.54)
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([1.11])
 AM_SILENT_RULES([yes])
