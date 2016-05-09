@@ -81,8 +81,7 @@ int main ( int argc, char *argv[] )
 				char *line;
 				size_t len = 0;
 
-				while (getline(&line, &len, src) != -1) 
-					fprintf(dst, "%s", line);
+				while (getline(&line, &len, src) != -1) fprintf(dst, "%s", line);
 				fclose(src);
 				fclose(dst);
 				// change owner and group to root
@@ -96,7 +95,7 @@ int main ( int argc, char *argv[] )
 				if (chmod(argv[2], strtol("0600", 0, 8))) 
 				{
 					printf("gvpngate_suid: Unable to set permissions of system connection file.");
-				    printf("\n");					
+				    	printf("\n");					
 					return 1;
 				}
 			}
