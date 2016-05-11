@@ -48,11 +48,82 @@ GtkListStore *VPN_List;
 /****************************
  *    Function Declares     *
  ****************************/
+gboolean Check_for_Process(void);
 gboolean Check_SElinux(void);
 gboolean Check_nmcli_Version(void);
 void Destroy_Main_Window (GtkWidget*,gpointer);
 GtkWidget* Create_Main_Window (void);
 int main (int argc, char *argv[]);
+
+/****************************************************************************
+ *                                                                          *
+ * Function: Check_for_Process                                              *
+ *                                                                          *
+ * Purpose : See if Gvpngate is already running                             *
+ *           returns true if already running, false otherwise               *
+ *                                                                          *
+ ****************************************************************************/
+gboolean Check_for_Process(void)
+{
+	gboolean func_ret = FALSE;
+	gchar *filestr = NULL;
+	gint ret = 0;
+	gint status;
+	pid_t pid;
+	
+	filestr = g_strconcat(WorkDir, "/pslist", NULL);
+	ret = 0;
+	pid = fork();
+	if (pid == 0)
+	{
+		int fd, fd_null;
+
+		fd = open(filestr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+		fd_null =  open("/dev/null", O_RDWR); 
+		dup2(fd, STDOUT_FILENO);   		// make stdout go to status file
+		dup2(fd_null, STDERR_FILENO);	// make stderr go to null file
+		close(fd);
+		close(fd_null);
+		execlp("ps", "ps", "-A", "-o", "pid,comm", NULL);
+		_exit(EXIT_FAILURE);
+	}
+	else if (pid < 0) ret = -1;
+	else if (waitpid (pid, &status, 0) != pid)  ret = -1;
+	// check for fail or exit status other than 0
+	if ((!ret) && WIFEXITED(status) && !WEXITSTATUS(status))
+	{
+		FILE *statusfile;
+		gchar *line = NULL;
+		size_t len = 0;
+		size_t read;
+		gchar *command_str = NULL;
+		gint numofgvpngates = 0;
+
+		statusfile = fopen(filestr, "r");
+		if (statusfile != NULL)
+		{
+			// getline loop
+			while ((read = getline(&line, &len, statusfile)) != -1) 
+			{
+				gint ctr = 1;
+				//get process command string
+				while (line[ctr+6] != '\n') ctr++;
+				command_str = g_strndup (line+6, ctr);
+				//check if gvpngate exists
+				if (!strncmp(command_str, "gvpngate", 8)) numofgvpngates++;
+			}
+			if (numofgvpngates > 1) func_ret = TRUE;
+		}
+		// close file
+		if (statusfile != NULL) fclose(statusfile);
+		// delete file
+		if (stat(filestr, &st) == 0) remove(filestr);
+		g_free(line);
+		g_free(command_str);
+	}
+	g_free(filestr);
+	return func_ret;
+}
 
 /****************************************************************************
  *                                                                          *
@@ -553,7 +624,7 @@ gboolean CreateConnection (gpointer data)
 				Statusbar_Message("Failed to set SELinux label for certificate file. This sucks.");
 				return FALSE;
 			}
-			// move crt back to out home directory so we can manage it
+			// move crt back to our home directory so we can manage it
 			ret = 0;
 			pid = fork();
 			if (pid == 0)
@@ -1444,17 +1515,6 @@ GtkWidget* Create_Main_Window (void)
 	// initalize statusbar and set the statusbar conxtext id
 	MainWin_StatusBarID = gtk_statusbar_get_context_id
 		(GTK_STATUSBAR(MainWin_StatusBar), "Main Window Messages");
-	// create a dummy.crt file so ls command doesn't complain on cleanup
-	{
-		FILE *dummyfile;
-		gchar *tempstr = NULL;
-
-		// use a name that is pretty sure not to be someone's NM vpn name
-		tempstr = g_strconcat(WorkDir, "/_gvpngate_temporary_dummy_junk_file_.crt", NULL);
-		dummyfile = fopen(tempstr, "w");
-		if (dummyfile != NULL) fclose(dummyfile);
-		g_free(tempstr);
-	}
 	Statusbar_Message("Downloading vpn list.  Please wait...");
 	return window;
 }
@@ -1474,6 +1534,12 @@ int main (int argc, char *argv[])
 	WorkDir = g_strconcat (g_get_home_dir (), "/.gvpngate", NULL);
 	// make sure work directory exists
 	if (stat(WorkDir, &st) == -1) mkdir(WorkDir, 0700);
+	// check if already running
+	if (Check_for_Process())
+	{
+		g_print("Gvpngate is already running.\n");
+		exit(1);
+	}
 	// check nmcli version
 	b_is_new_nmcli = Check_nmcli_Version();
 	// check for selinux
@@ -1495,15 +1561,3 @@ int main (int argc, char *argv[])
 	gtk_main ();
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
