@@ -40,15 +40,14 @@ int main ( int argc, char *argv[] )
 			if (pid == 0)
 			{
 				int fd_null =  open("/dev/null", O_RDWR); 
-				dup2(fd_null, STDOUT_FILENO);	// make stdout go to null file
-				dup2(fd_null, STDERR_FILENO); 	// make stderr go to null file
+				dup2(fd_null, STDOUT_FILENO);	
+				dup2(fd_null, STDERR_FILENO); 	
 				close(fd_null);
 				execlp("nmcli", "nmcli", "con", "reload", NULL);
 				_exit(EXIT_FAILURE);
 			}
 			else if (pid < 0) ret = -1;
 			else if (waitpid (pid, &status, 0) != pid)  ret = -1;
-			// check for fail or exit status other than 0
 			if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 			{
 				printf("gvpngate_suid: Unable reload connections.");

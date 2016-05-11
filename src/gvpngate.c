@@ -80,8 +80,8 @@ gboolean Check_for_Process(void)
 
 		fd = open(filestr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
 		fd_null =  open("/dev/null", O_RDWR); 
-		dup2(fd, STDOUT_FILENO);   		// make stdout go to status file
-		dup2(fd_null, STDERR_FILENO);	// make stderr go to null file
+		dup2(fd, STDOUT_FILENO);   		
+		dup2(fd_null, STDERR_FILENO);	
 		close(fd);
 		close(fd_null);
 		execlp("ps", "ps", "-A", "-o", "pid,comm", NULL);
@@ -89,7 +89,6 @@ gboolean Check_for_Process(void)
 	}
 	else if (pid < 0) ret = -1;
 	else if (waitpid (pid, &status, 0) != pid)  ret = -1;
-	// check for fail or exit status other than 0
 	if ((!ret) && WIFEXITED(status) && !WEXITSTATUS(status))
 	{
 		FILE *statusfile;
@@ -144,8 +143,8 @@ gboolean Check_SElinux(void)
 	if (pid == 0)
 	{
 		int fd_null =  open("/dev/null", O_RDWR); 
-		dup2(fd_null, STDOUT_FILENO);	// make stdout go to null file
-		dup2(fd_null, STDERR_FILENO); 	// make stderr go to null file
+		dup2(fd_null, STDOUT_FILENO);	
+		dup2(fd_null, STDERR_FILENO); 	
 		close(fd_null);
 		execlp("selinuxenabled", "selinuxenabled", NULL);
 		_exit(EXIT_FAILURE);
@@ -183,8 +182,8 @@ gboolean Check_nmcli_Version(void)
 
 		fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
 		fd_null =  open("/dev/null", O_RDWR); 
-		dup2(fd, STDOUT_FILENO);   		// make stdout go to status file
-		dup2(fd_null, STDERR_FILENO);	// make stderr go to null file
+		dup2(fd, STDOUT_FILENO);   		
+		dup2(fd_null, STDERR_FILENO);	
 		close(fd);
 		close(fd_null);
 		execlp("nmcli", "nmcli", "-v", NULL);
@@ -192,7 +191,6 @@ gboolean Check_nmcli_Version(void)
 	}
 	else if (pid < 0) ret = -1;
 	else if (waitpid (pid, &status, 0) != pid)  ret = -1;
-	// check for fail or exit status other than 0
 	if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 	{
 		// return true on failure because odds are most have newer distros
@@ -618,7 +616,6 @@ gboolean CreateConnection (gpointer data)
 			}
 			else if (pid < 0) ret = -1;
 			else if (waitpid (pid, &status, 0) != pid)  ret = -1;
-			// check for fail or exit status other than 0
 			if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 			{
 				Statusbar_Message("Failed to set SELinux label for certificate file. This sucks.");
@@ -634,7 +631,6 @@ gboolean CreateConnection (gpointer data)
 			}
 			else if (pid < 0) ret = -1;
 			else if (waitpid (pid, &status, 0) != pid)  ret = -1;
-			// check for fail or exit status other than 0
 			if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 			{
 				Statusbar_Message("Failed to set SELinux label for certificate file. This sucks.");
@@ -669,8 +665,7 @@ gboolean CreateConnection (gpointer data)
 			// get info from selected row
 			gtk_tree_model_get (model, &iter, 5, &country, -1);
 			// see if this connection exists
-			filestr = g_strconcat("/etc/NetworkManager/system-connections/", 
-			                      vpnname, NULL);
+			filestr = g_strconcat("/etc/NetworkManager/system-connections/", vpnname, NULL);
 			if (stat(filestr, &st) == 0) 
 			{
 				// use gvpngate_suid to delete it
@@ -683,7 +678,6 @@ gboolean CreateConnection (gpointer data)
 				}
 				else if (pid < 0) ret = -1;
 				else if (waitpid (pid, &status, 0) != pid)  ret = -1;
-				// check for fail or exit status other than 0
 				if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 				{
 					gchar *tmpexitstr = NULL;
@@ -711,7 +705,6 @@ gboolean CreateConnection (gpointer data)
 					}
 					else if (pid < 0) ret = -1;
 					else if (waitpid (pid, &status, 0) != pid)  ret = -1;
-					// check for fail or exit status other than 0
 					if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 					{
 						gchar *tmpexitstr = NULL;
@@ -737,8 +730,8 @@ gboolean CreateConnection (gpointer data)
 
 				fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
 				fd_null =  open("/dev/null", O_RDWR); 
-				dup2(fd, STDOUT_FILENO);   		// make stdout go to status file
-				dup2(fd_null, STDERR_FILENO);	// make stderr go to null file
+				dup2(fd, STDOUT_FILENO);   		
+				dup2(fd_null, STDERR_FILENO);	
 				close(fd);
 				close(fd_null);
 				execlp("nmcli", "nmcli", "-t", "-f", "NAME,TYPE", "con", NULL);
@@ -746,7 +739,6 @@ gboolean CreateConnection (gpointer data)
 			}
 			else if (pid < 0) ret = -1;
 			else if (waitpid (pid, &status, 0) != pid)  ret = -1;
-			// check for fail or exit status other than 0
 			if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 			{
 				gchar *tmpexitstr = NULL;
@@ -836,17 +828,14 @@ gboolean CreateConnection (gpointer data)
 			uuid_unparse_lower(uuid, uuid_str);
 			fprintf(connectfile, "uuid=%s\n", uuid_str);
 			fprintf(connectfile, "type=vpn\n\n[vpn]\n");
-			fprintf(connectfile, 
-			        "service-type=org.freedesktop.NetworkManager.openvpn\n");
+			fprintf(connectfile, "service-type=org.freedesktop.NetworkManager.openvpn\n");
 			fprintf(connectfile, "connection-type=password\n");
 			fprintf(connectfile, "auth=%s\n", auth);
 			fprintf(connectfile, "password-flags=0\n");
 			fprintf(connectfile, "remote=%s\n", ipaddress);
 			fprintf(connectfile, "cipher=%s\n", cipher);
-			if (!strncmp(protocol, "tcp", 3))
-				fprintf(connectfile, "proto-tcp=yes\n");
-			if (!strncmp(device, "tap", 3))
-				fprintf(connectfile, "tap-dev=yes\n");
+			if (!strncmp(protocol, "tcp", 3)) fprintf(connectfile, "proto-tcp=yes\n");
+			if (!strncmp(device, "tap", 3)) fprintf(connectfile, "tap-dev=yes\n");
 			fprintf(connectfile, "port=%s\n", port);
 			fprintf(connectfile, "username=vpn\n");
 			fprintf(connectfile, "ca=%s/%s.crt\n", WorkDir, vpnname);
@@ -860,8 +849,7 @@ gboolean CreateConnection (gpointer data)
 	}
 	// run suid program to copy connection file
 	cmdstr = g_strconcat(WorkDir, "/", vpnname, NULL);
-	filestr = g_strconcat("/etc/NetworkManager/system-connections/", 
-	                      vpnname, NULL);
+	filestr = g_strconcat("/etc/NetworkManager/system-connections/", vpnname, NULL);
 	ret = 0;
 	pid = fork();
 	if (pid == 0)
@@ -871,7 +859,6 @@ gboolean CreateConnection (gpointer data)
 	}
 	else if (pid < 0) ret = -1;
 	else if (waitpid (pid, &status, 0) != pid)  ret = -1;
-	// check for fail or exit status other than 0
 	if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 	{
 		// remove connection file from workdir
@@ -893,20 +880,18 @@ gboolean CreateConnection (gpointer data)
 
 		fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
 		fd_null =  open("/dev/null", O_RDWR); 
-		dup2(fd, STDOUT_FILENO);   		// make stdout go to status file
-		dup2(fd_null, STDERR_FILENO);	// make stderr go to null file
+		dup2(fd, STDOUT_FILENO);   		
+		dup2(fd_null, STDERR_FILENO);	
 		close(fd);
 		close(fd_null);
 		if (b_is_new_nmcli)
-			execlp("nmcli", "nmcli", "-t", "-f", "NAME,TYPE", "con", "show", 
-			       "--active", NULL);
+			execlp("nmcli", "nmcli", "-t", "-f", "NAME,TYPE", "con", "show", "--active", NULL);
 		else
 			execlp("nmcli", "nmcli", "-t", "-f", "NAME,VPN", "con", "status", NULL);
 		_exit(EXIT_FAILURE);
 	}
 	else if (pid < 0) ret = -1;
 	else if (waitpid (pid, &status, 0) != pid)  ret = -1;
-	// check for fail or exit status other than 0
 	if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 	{
 		Statusbar_Message("Failed to get running connection list. This sucks.");
@@ -960,15 +945,14 @@ gboolean CreateConnection (gpointer data)
 					if (pid == 0)
 					{
 						int fd_null =  open("/dev/null", O_RDWR); 
-						dup2(fd_null, STDOUT_FILENO);   // make stdout go to null file
-						dup2(fd_null, STDERR_FILENO);   // make stderr go to null file
+						dup2(fd_null, STDOUT_FILENO);   
+						dup2(fd_null, STDERR_FILENO);   
 						close(fd_null);
 						execlp("nmcli", "nmcli", "con", "down", "id", token1, NULL);
 						_exit(EXIT_FAILURE);
 					}
 					else if (pid < 0) ret = -1;
 					else if (waitpid (pid, &status, 0) != pid)  ret = -1;
-					// check for fail or exit status other than 0
 					if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 					{
 						Statusbar_Message("Failed to kill running connection. This sucks.");
@@ -1000,7 +984,6 @@ gboolean CreateConnection (gpointer data)
 		}
 		else if (pid < 0) ret = -1;
 		else if (waitpid (pid, &status, 0) != pid)  ret = -1;
-		// check for fail or exit status other than 0
 		if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 		{
 			Statusbar_Message("Failed reload connections. This sucks.");
@@ -1013,8 +996,8 @@ gboolean CreateConnection (gpointer data)
 	if (pid == 0)
 	{
 		int fd_null =  open("/dev/null", O_RDWR); 
-		dup2(fd_null, STDOUT_FILENO);	// make stdout go to null file
-		dup2(fd_null, STDERR_FILENO); 	// make stderr go to null file
+		dup2(fd_null, STDOUT_FILENO);	
+		dup2(fd_null, STDERR_FILENO); 	
 		close(fd_null);
 		execlp("nmcli", "nmcli", "con", "up", "id", nm_id, NULL);
 		_exit(EXIT_FAILURE);
@@ -1026,8 +1009,7 @@ gboolean CreateConnection (gpointer data)
 	{
 		gchar *msg = NULL;
 
-		msg = g_strconcat("Successfully connected to: ", vpnname, 
-		                  " (", nm_id, ")", NULL); 
+		msg = g_strconcat("Successfully connected to: ", vpnname, " (", nm_id, ")", NULL); 
 		Statusbar_Message(msg); 
 		g_free(msg);
 	}
@@ -1038,15 +1020,14 @@ gboolean CreateConnection (gpointer data)
 		if (pid == 0)
 		{
 			int fd_null =  open("/dev/null", O_RDWR); 
-			dup2(fd_null, STDOUT_FILENO);   // make stdout go to null file
-			dup2(fd_null, STDERR_FILENO);   // make stderr go to null file
+			dup2(fd_null, STDOUT_FILENO);   
+			dup2(fd_null, STDERR_FILENO);   
 			close(fd_null);
 			execlp("nmcli", "nmcli", "con", "delete", "id", nm_id, NULL);
 			_exit(EXIT_FAILURE);
 		}
 		else if (pid < 0) ret = -1;
 		else if (waitpid (pid, &status, 0) != pid)  ret = -1;
-		// check for fail or exit status other than 0
 		if ((!ret) && WIFEXITED(status) && !WEXITSTATUS(status))
 		{
 			// send reload
@@ -1063,7 +1044,6 @@ gboolean CreateConnection (gpointer data)
 				}
 				else if (pid < 0) ret = -1;
 				else if (waitpid (pid, &status, 0) != pid)  ret = -1;
-				// check for fail or exit status other than 0
 				if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 				{
 					Statusbar_Message("Failed reload connections. This sucks.");
@@ -1124,7 +1104,7 @@ gboolean Get_Vpn_List_File(gpointer data)
 	gchar *tempstr = NULL;
 
 	// unselect rows
-	gtk_tree_selection_unselect_all
+	gtk_tree_selection_unselect_all 
 		(gtk_tree_view_get_selection(GTK_TREE_VIEW(VPN_List_Treeview)));
 	// call wget to retrieve data file
 	tempstr = g_strconcat("--output-document=", WorkDir, "/vpn.tmp", NULL);
@@ -1133,8 +1113,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 	if (pid == 0)
 	{
 		int fd_null =  open("/dev/null", O_RDWR); 
-		dup2(fd_null, STDOUT_FILENO);   // make stdout go to null file
-		dup2(fd_null, STDERR_FILENO);   // make stderr go to null file
+		dup2(fd_null, STDOUT_FILENO);   
+		dup2(fd_null, STDERR_FILENO);   
 		close(fd_null);
 		execlp("wget", "wget", tempstr, "--quiet", "--timeout=20", 
 		       "http://www.vpngate.net/api/iphone/", NULL);
@@ -1381,16 +1361,16 @@ void Destroy_Main_Window (GtkWidget *widget, gpointer data)
 
 		fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
 		fd_null =  open("/dev/null", O_RDWR); 
-		dup2(fd, STDOUT_FILENO);   		// make stdout go to status file
-		dup2(fd_null, STDERR_FILENO);	// make stderr go to null file
+		dup2(fd, STDOUT_FILENO);   		
+		dup2(fd_null, STDERR_FILENO);	
 		close(fd);
 		close(fd_null);
-		execlp("find", "find", WorkDir, "-name", "*.crt", "-printf", "%P\n", NULL);
+		execlp("find", "find", WorkDir, "-name", "*.crt", "-printf", "%P\n", 
+		       NULL);
 		_exit(EXIT_FAILURE);
 	}
 	else if (pid < 0) ret = -1;
 	else if (waitpid (pid, &status, 0) != pid)  ret = -1;
-	// check for fail or exit status other than 0
 	if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 	{
 		Statusbar_Message("Failed to get directory listing. This sucks.");
@@ -1420,7 +1400,7 @@ void Destroy_Main_Window (GtkWidget *widget, gpointer data)
 
 				tmpstr2 = g_strndup (line, read - 5);
 				tmpstr3 = g_strconcat("/etc/NetworkManager/system-connections/", 
-			                      tmpstr2, NULL);
+				                      tmpstr2, NULL);
 				tmpstr4 = g_strconcat(WorkDir, "/", tmpstr2, ".crt", NULL);
 				// if it dosen't exist in NM dir, delete from work dir
 				if (stat(tmpstr3, &st) != 0)
@@ -1510,8 +1490,7 @@ GtkWidget* Create_Main_Window (void)
 	g_object_unref (builder);
 	// set version in about dialog
 	gtk_about_dialog_set_version (GTK_ABOUT_DIALOG(AboutBox), 
-	                              g_strconcat("Version ", GVPNGATE_VERSION, 
-	                                          NULL));
+	                              g_strconcat("Version ", GVPNGATE_VERSION, NULL));
 	// initalize statusbar and set the statusbar conxtext id
 	MainWin_StatusBarID = gtk_statusbar_get_context_id
 		(GTK_STATUSBAR(MainWin_StatusBar), "Main Window Messages");
