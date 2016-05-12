@@ -84,7 +84,7 @@ gboolean Check_for_Process(void)
 		dup2(fd_null, STDERR_FILENO);	
 		close(fd);
 		close(fd_null);
-		execlp("ps", "ps", "-A", "-o", "pid,comm", NULL);
+		execlp("ps", "ps", "-A", "-o", "comm", NULL);
 		_exit(EXIT_FAILURE);
 	}
 	else if (pid < 0) ret = -1;
@@ -104,10 +104,10 @@ gboolean Check_for_Process(void)
 			// getline loop
 			while ((read = getline(&line, &len, statusfile)) != -1) 
 			{
-				gint ctr = 1;
+				gint ctr = 0;
 				//get process command string
-				while (line[ctr+6] != '\n') ctr++;
-				command_str = g_strndup (line+6, ctr);
+				while (line[ctr] != '\n') ctr++;
+				command_str = g_strndup (line, ctr);
 				//check if gvpngate exists
 				if (!strncmp(command_str, "gvpngate", 8)) numofgvpngates++;
 			}
@@ -262,11 +262,11 @@ void ShowAboutDialog (void)
 
 	switch (result)
 	{
-	case GTK_RESPONSE_ACCEPT:
-		break;
-	default:
-		gtk_widget_hide(AboutBox);
-		break;
+		case GTK_RESPONSE_ACCEPT:
+			break;
+		default:
+			gtk_widget_hide(AboutBox);
+			break;
 	}
 }
 
