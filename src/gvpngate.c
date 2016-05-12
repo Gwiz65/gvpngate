@@ -453,7 +453,7 @@ void VpnListSelectionChanged (void)
 /****************************************************************************
  *                                                                          *
  * Function: CreateConnection                                               *
- *				                                                            *
+ *				                                            *
  * Purpose : handle connect button clicked signal                           *
  *                                                                          *
  ****************************************************************************/
