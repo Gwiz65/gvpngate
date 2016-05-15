@@ -673,7 +673,7 @@ gboolean CreateConnection (gpointer data)
 				pid = fork();
 				if (pid == 0)
 				{
-					execlp("gvpngate_suid", "gvpngate_suid", filestr, NULL);
+					execlp("gvpngate_suid", "gvpngate_suid", vpnname, NULL);
 					_exit(EXIT_FAILURE);
 				}
 				else if (pid < 0) ret = -1;
@@ -849,12 +849,11 @@ gboolean CreateConnection (gpointer data)
 	}
 	// run suid program to copy connection file
 	cmdstr = g_strconcat(WorkDir, "/", vpnname, NULL);
-	filestr = g_strconcat("/etc/NetworkManager/system-connections/", vpnname, NULL);
 	ret = 0;
 	pid = fork();
 	if (pid == 0)
 	{
-		execlp("gvpngate_suid", "gvpngate_suid", cmdstr, filestr, NULL);
+		execlp("gvpngate_suid", "gvpngate_suid", cmdstr, vpnname, NULL);
 		_exit(EXIT_FAILURE);
 	}
 	else if (pid < 0) ret = -1;

@@ -25,7 +25,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
- 
+#include <linux/limits.h>
+
 int main ( int argc, char *argv[] )
 {
 	switch (argc) 		
@@ -58,8 +59,11 @@ int main ( int argc, char *argv[] )
 		}
 		case 2:
 		{
-			// only one filename - delete it
-			if (remove(argv[1])) 
+			char tmpstr[PATH_MAX];
+
+			// only a filename - delete it
+			sprintf(tmpstr, "/etc/NetworkManager/system-connections/%s", argv[1]);
+			if (remove(tmpstr)) 
 			{
 				printf("gvpngate_suid: Unable to delete system connection file.");
 				printf("\n");
@@ -71,10 +75,12 @@ int main ( int argc, char *argv[] )
 		{
 			FILE *src;
 			FILE *dst;
+			char tmpstr[PATH_MAX];
 
-			// We assume argv[1] is the source and argv[2] is the dest 
+			// We assume argv[1] is the source and argv[2] is the vpnname
+			sprintf(tmpstr, "/etc/NetworkManager/system-connections/%s", argv[2]);
 			src = fopen(argv[1], "r");
-			dst = fopen(argv[2], "w");
+			dst = fopen(tmpstr, "w");
 			if ((src != NULL) && (dst != NULL))
 			{
 				char *line;
@@ -84,14 +90,14 @@ int main ( int argc, char *argv[] )
 				fclose(src);
 				fclose(dst);
 				// change owner and group to root
-				if (chown(argv[2], 0, 0)) 
+				if (chown(tmpstr, 0, 0)) 
 				{
 					printf("gvpngate_suid: Unable to set ownership of system connection file.");
 					printf("\n");
 					return 1;
 				}
 				// set permissions
-				if (chmod(argv[2], strtol("0600", 0, 8))) 
+				if (chmod(tmpstr, strtol("0600", 0, 8))) 
 				{
 					printf("gvpngate_suid: Unable to set permissions of system connection file.");
 				    	printf("\n");					
