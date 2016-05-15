@@ -168,19 +168,19 @@ gboolean Check_SElinux(void)
 gboolean Check_nmcli_Version(void)
 {
 	gboolean func_ret = FALSE;
-	gchar *cmdstr = NULL;
+	gchar *filestr = NULL;
 	gint ret = 0;
 	gint status;
 	pid_t pid;
 	
-	cmdstr = g_strconcat(WorkDir, "/status", NULL);
+	filestr = g_strconcat(WorkDir, "/status", NULL);
 	ret = 0;
 	pid = fork();
 	if (pid == 0)
 	{
 		int fd, fd_null;
 
-		fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+		fd = open(filestr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
 		fd_null =  open("/dev/null", O_RDWR); 
 		dup2(fd, STDOUT_FILENO);   		
 		dup2(fd_null, STDERR_FILENO);	
@@ -245,7 +245,7 @@ gboolean Check_nmcli_Version(void)
 		g_free(token2);
 		g_free(token3);
 	}
-	g_free(cmdstr);
+	g_free(filestr);
 	return func_ret;
 }
 
@@ -461,7 +461,8 @@ gboolean CreateConnection (gpointer data)
 {
 	GtkTreeModel *model;
 	GtkTreeIter iter;
-	gchar *cmdstr = NULL;
+	gchar *tmp_str1 = NULL;
+	gchar *tmp_str2 = NULL;
 	gchar *vpnname = NULL;
 	gchar *ipaddress = NULL;
 	gchar *port = NULL;
@@ -470,7 +471,6 @@ gboolean CreateConnection (gpointer data)
 	gchar *device = NULL;
 	gchar *protocol = NULL;
 	gchar *nm_id = NULL;
-	gchar *filestr = NULL;
 	gboolean bWritingCrt = FALSE;
 	FILE *crtfile;
 	FILE *connectfile;
@@ -665,8 +665,8 @@ gboolean CreateConnection (gpointer data)
 			// get info from selected row
 			gtk_tree_model_get (model, &iter, 5, &country, -1);
 			// see if this connection exists
-			filestr = g_strconcat("/etc/NetworkManager/system-connections/", vpnname, NULL);
-			if (stat(filestr, &st) == 0) 
+			tmp_str2 = g_strconcat("/etc/NetworkManager/system-connections/", vpnname, NULL);
+			if (stat(tmp_str2, &st) == 0) 
 			{
 				// use gvpngate_suid to delete it
 				ret = 0;
@@ -721,14 +721,14 @@ gboolean CreateConnection (gpointer data)
 				sleep(1);
 			}
 			// get a list of connections
-			cmdstr = g_strconcat(WorkDir, "/status", NULL);
+			tmp_str1 = g_strconcat(WorkDir, "/status", NULL);
 			ret = 0;
 			pid = fork();
 			if (pid == 0)
 			{
 				int fd, fd_null;
 
-				fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+				fd = open(tmp_str1, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
 				fd_null =  open("/dev/null", O_RDWR); 
 				dup2(fd, STDOUT_FILENO);   		
 				dup2(fd_null, STDERR_FILENO);	
@@ -848,12 +848,12 @@ gboolean CreateConnection (gpointer data)
 		g_free(tempstr);
 	}
 	// run suid program to copy connection file
-	cmdstr = g_strconcat(WorkDir, "/", vpnname, NULL);
+	tmp_str1 = g_strconcat(WorkDir, "/", vpnname, NULL);
 	ret = 0;
 	pid = fork();
 	if (pid == 0)
 	{
-		execlp("gvpngate_suid", "gvpngate_suid", cmdstr, vpnname, NULL);
+		execlp("gvpngate_suid", "gvpngate_suid", tmp_str1, vpnname, NULL);
 		_exit(EXIT_FAILURE);
 	}
 	else if (pid < 0) ret = -1;
@@ -861,23 +861,23 @@ gboolean CreateConnection (gpointer data)
 	if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 	{
 		// remove connection file from workdir
-		cmdstr = g_strconcat(WorkDir, "/", vpnname, NULL);
-		if (stat(cmdstr, &st) == 0) remove(cmdstr);
+		tmp_str1 = g_strconcat(WorkDir, "/", vpnname, NULL);
+		if (stat(tmp_str1, &st) == 0) remove(tmp_str1);
 		Statusbar_Message("Gvpngate_suid failed to copy connection file. This sucks.");
 		return FALSE;
 	}
 	// remove connection file from workdir
-	cmdstr = g_strconcat(WorkDir, "/", vpnname, NULL);
-	if (stat(cmdstr, &st) == 0) remove(cmdstr);
+	tmp_str1 = g_strconcat(WorkDir, "/", vpnname, NULL);
+	if (stat(tmp_str1, &st) == 0) remove(tmp_str1);
 	// check for running connection and disconnect
-	cmdstr = g_strconcat(WorkDir, "/status", NULL);
+	tmp_str1 = g_strconcat(WorkDir, "/status", NULL);
 	ret = 0;
 	pid = fork();
 	if (pid == 0)
 	{
 		int fd, fd_null;
 
-		fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+		fd = open(tmp_str1, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
 		fd_null =  open("/dev/null", O_RDWR); 
 		dup2(fd, STDOUT_FILENO);   		
 		dup2(fd_null, STDERR_FILENO);	
@@ -1058,7 +1058,8 @@ gboolean CreateConnection (gpointer data)
 			return FALSE;
 		}
 	}
-	g_free(cmdstr);
+	g_free(tmp_str1);
+	g_free(tmp_str2);
 	g_free(vpnname);
 	g_free(ipaddress);
 	g_free(port);
@@ -1067,7 +1068,6 @@ gboolean CreateConnection (gpointer data)
 	g_free(device);
 	g_free(protocol);
 	g_free(nm_id);   
-	g_free(filestr);
 	return FALSE;
 }
 
@@ -1345,20 +1345,20 @@ gboolean Get_Vpn_List_File(gpointer data)
  ****************************************************************************/
 void Destroy_Main_Window (GtkWidget *widget, gpointer data)
 {
-	gchar *cmdstr = NULL;
+	gchar *filestr = NULL;
 	gint ret = -1;
 	gint status;
 	pid_t pid;
 
 	// get a list of .crt files
-	cmdstr = g_strconcat(WorkDir, "/status", NULL);
+	filestr = g_strconcat(WorkDir, "/status", NULL);
 	ret = 0;
 	pid = fork();
 	if (pid == 0)
 	{
 		int fd, fd_null;
 
-		fd = open(cmdstr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+		fd = open(filestr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
 		fd_null =  open("/dev/null", O_RDWR); 
 		dup2(fd, STDOUT_FILENO);   		
 		dup2(fd_null, STDERR_FILENO);	
@@ -1414,8 +1414,8 @@ void Destroy_Main_Window (GtkWidget *widget, gpointer data)
 		g_free(tempstr);
 	}
 	// delete status file
-	cmdstr = g_strconcat(WorkDir, "/status", NULL);
-	if (stat(cmdstr, &st) == 0) remove(cmdstr);
+	filestr = g_strconcat(WorkDir, "/status", NULL);
+	if (stat(filestr, &st) == 0) remove(filestr);
 	 // remove all our status messages
 	gtk_statusbar_remove_all(GTK_STATUSBAR(MainWin_StatusBar),
 	                         MainWin_StatusBarID);
@@ -1435,7 +1435,7 @@ void Destroy_Main_Window (GtkWidget *widget, gpointer data)
 	g_free(certdir);
 	
 	// release local string
-	g_free(cmdstr);
+	g_free(filestr);
 	// kill the main loop
 	gtk_main_quit ();
 }
