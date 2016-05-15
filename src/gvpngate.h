@@ -35,7 +35,7 @@
 //#define UI_FILE "src/gvpngate.ui"
 
 // define version
-#define GVPNGATE_VERSION "0.54"
+#define GVPNGATE_VERSION "0.55"
 
 /****************************
  * Global Function Declares *
