@@ -1506,8 +1506,6 @@ GtkWidget* Create_Main_Window (void)
  ****************************************************************************/
 int main (int argc, char *argv[])
 {
-	// initalize gtk
-	gtk_init (&argc, &argv);
 	// set our work directory
 	WorkDir = g_strconcat (g_get_home_dir (), "/.gvpngate", NULL);
 	// make sure work directory exists
@@ -1529,6 +1527,8 @@ int main (int argc, char *argv[])
 		// make sure cert dir exists
 		if (stat(certdir, &st) == -1) mkdir(certdir, 0700);
 	}
+	// initalize gtk
+	gtk_init (&argc, &argv);
 	// create main window
 	MainWindow = Create_Main_Window ();
 	// show main window
