@@ -42,7 +42,9 @@ gvpngateicon_DATA = gvpngate.png
 gvpngateuiicondir = $(pkgdatadir)/ui
 gvpngateuiicon_DATA = gvpngate.png
 
-EXTRA_DIST = $(gvpngatedoc_DATA) $(gvpngatedesktop_DATA)\
+EXTRA_DIST = \
+	$(gvpngatedoc_DATA)\
+	$(gvpngatedesktop_DATA)\
 	$(gvpngateicon_DATA)
 
 # Remove doc directory on uninstall
