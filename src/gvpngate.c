@@ -713,7 +713,7 @@ gboolean CreateConnection (gpointer data)
 						// remove connection file from workdir
 						tmpexitstr = g_strconcat(WorkDir, "/", vpnname, NULL);
 						if (stat(tmpexitstr, &st) == 0) remove(tmpexitstr);
-						Statusbar_Message("Failed reload connections. This sucks.");
+						Statusbar_Message("Failed to reload connections. This sucks.");
 						g_free(tmpexitstr);
 						return FALSE;
 					}
@@ -985,7 +985,7 @@ gboolean CreateConnection (gpointer data)
 		else if (waitpid (pid, &status, 0) != pid)  ret = -1;
 		if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 		{
-			Statusbar_Message("Failed reload connections. This sucks.");
+			Statusbar_Message("Failed to reload connections. This sucks.");
 			return FALSE;
 		}
 	}
@@ -1045,7 +1045,7 @@ gboolean CreateConnection (gpointer data)
 				else if (waitpid (pid, &status, 0) != pid)  ret = -1;
 				if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 				{
-					Statusbar_Message("Failed reload connections. This sucks.");
+					Statusbar_Message("Failed to reload connections. This sucks.");
 					return FALSE;
 				}
 			}
@@ -1176,7 +1176,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			
 			//append line to list store
 			gtk_list_store_append (VPN_List, &iter);
-
 			// get vpn name
 			while (line[pos+ctr] != ',') ctr++;
 			// limit to 20 chars
@@ -1184,7 +1183,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 				token = g_strndup (line+pos, 20); 
 			else
 				token = g_strndup (line+pos, ctr); 
-			// add to list store
 			if (g_utf8_validate (token, -1, NULL))
 				gtk_list_store_set (VPN_List, &iter, 0, token, -1);
 			pos = pos + ctr + 1;
@@ -1193,7 +1191,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			ctr = 0;
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
-			// add to list store
 			if (g_utf8_validate (token, -1, NULL))
 				gtk_list_store_set (VPN_List, &iter, 1, token, -1);
 			pos = pos + ctr + 1;
@@ -1202,7 +1199,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			ctr = 0;
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
-			// add to list store
 			if (g_utf8_validate (token, -1, NULL))
 				gtk_list_store_set (VPN_List, &iter, 2, atol(token), -1);
 			pos = pos + ctr + 1;
@@ -1211,7 +1207,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			ctr = 0;
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
-			// add to list store
 			if (g_utf8_validate (token, -1, NULL))
 				gtk_list_store_set (VPN_List, &iter, 3, atol(token), -1);
 			pos = pos + ctr + 1;
@@ -1220,7 +1215,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			ctr = 0;
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
-			// add to list store
 			if (g_utf8_validate (token, -1, NULL))
 				gtk_list_store_set (VPN_List, &iter, 4, atol(token), -1);
 			pos = pos + ctr + 1;
@@ -1233,7 +1227,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 				token = g_strndup (line+pos, 20); 
 			else
 				token = g_strndup (line+pos, ctr); 
-			// add to list store
 			if (g_utf8_validate (token, -1, NULL))
 				gtk_list_store_set (VPN_List, &iter, 5, token, -1);
 			pos = pos + ctr + 1;
@@ -1242,7 +1235,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			ctr = 0;
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
-			// add to list store
 			if (g_utf8_validate (token, -1, NULL))
 				gtk_list_store_set (VPN_List, &iter, 6, token, -1);
 			pos = pos + ctr + 1;
@@ -1251,7 +1243,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			ctr = 0;
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
-			// add to list store
 			if (g_utf8_validate (token, -1, NULL))
 				gtk_list_store_set (VPN_List, &iter, 7, atol(token), -1);
 			pos = pos + ctr + 1;
@@ -1269,7 +1260,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			ctr = 0;
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
-			// add to list store
 			if (g_utf8_validate (token, -1, NULL))
 				gtk_list_store_set (VPN_List, &iter, 9, atol(token), -1);
 			pos = pos + ctr + 1;
@@ -1278,7 +1268,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			ctr = 0;
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
-			// add to list store
 			if (g_utf8_validate (token, -1, NULL))
 				gtk_list_store_set (VPN_List, &iter, 10, atol(token), -1);
 			pos = pos + ctr + 1;
@@ -1287,7 +1276,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			ctr = 0;
 			while (line[pos+ctr] != ',') ctr++;
 			token = g_strndup (line+pos, ctr);
-			// add to list store
 			if (g_utf8_validate (token, -1, NULL))
 				gtk_list_store_set (VPN_List, &iter, 11, token, -1);
 			pos = pos + ctr + 1;
@@ -1300,7 +1288,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 				token = g_strndup (line+pos, 30); 
 			else
 				token = g_strndup (line+pos, ctr); 
-			// add to list store
 			if (g_utf8_validate (token, -1, NULL))
 				gtk_list_store_set (VPN_List, &iter, 12, token, -1);
 			pos = pos + ctr + 1;
@@ -1313,7 +1300,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 				token = g_strndup (line+pos, 30); 
 			else
 				token = g_strndup (line+pos, ctr); 
-			// add to list store
 			if (g_utf8_validate (token, -1, NULL))
 			    gtk_list_store_set (VPN_List, &iter, 13, token, -1);
 			pos = pos + ctr + 1;
@@ -1322,7 +1308,6 @@ gboolean Get_Vpn_List_File(gpointer data)
 			ctr = 0;
 			while (line[pos+ctr] != '\n') ctr++;
 			token = g_strndup (line+pos, ctr);
-			// add to list store
 			if (g_utf8_validate (token, -1, NULL))
 				gtk_list_store_set (VPN_List, &iter, 14, token, -1);
 			
