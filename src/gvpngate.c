@@ -1145,7 +1145,7 @@ gboolean Get_Vpn_List_File(gpointer data)
 			}
 			if (bFirstLine && bSecondLine) bValidVPNFile = TRUE;
 			// close file
-			if (vpnlistfile != NULL) fclose(vpnlistfile);
+			fclose(vpnlistfile);
 			g_free(cmpstr);		
 		}
 	}
