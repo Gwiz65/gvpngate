@@ -1185,11 +1185,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 		Statusbar_Message("Unable to read VPN list. This sucks.");
 		return FALSE;
 	}
-	else
-	{
-		// clear list store
-		gtk_list_store_clear (VPN_List);
-	}
+	// clear list store
+	gtk_list_store_clear (VPN_List);
 	// getline loop
     while ((read = getline(&line, &len, vpnlistfile)) != -1) 
 	{
