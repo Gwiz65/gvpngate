@@ -453,7 +453,7 @@ void VpnListSelectionChanged (void)
 /****************************************************************************
  *                                                                          *
  * Function: CreateConnection                                               *
- *				                                            *
+ *                                                                          *
  * Purpose : handle connect button clicked signal                           *
  *                                                                          *
  ****************************************************************************/
@@ -1101,7 +1101,8 @@ gboolean Get_Vpn_List_File(gpointer data)
 	size_t len = 0;
 	size_t read;
 	gchar *tempstr = NULL;
-
+	gboolean bValidVPNFile = FALSE;
+	
 	// unselect rows
 	gtk_tree_selection_unselect_all 
 		(gtk_tree_view_get_selection(GTK_TREE_VIEW(VPN_List_Treeview)));
@@ -1123,6 +1124,32 @@ gboolean Get_Vpn_List_File(gpointer data)
 	else if (waitpid (pid, &status, 0) != pid)  ret = -1;
 	// check to see if we got the file
 	if ((!ret) && WIFEXITED(status) && !WEXITSTATUS(status))
+	{
+		// verify downloaded file is valid by comparing 1st two lines
+		tempstr = g_strconcat(WorkDir, "/vpn.tmp", NULL);
+		vpnlistfile = fopen(tempstr, "r");
+		if (vpnlistfile != NULL)
+		{
+			gboolean bFirstLine = FALSE;
+			gboolean bSecondLine = FALSE;
+			gchar *cmpstr = NULL;
+
+			cmpstr = g_strconcat("#HostName,IP,Score,Ping,Speed,CountryLong,CountryShort,",
+			                     "NumVpnSessions,Uptime,TotalUsers,TotalTraffic,LogType,",
+			                     "Operator,Message,OpenVPN_ConfigData_Base64", NULL); 
+			// getline loop
+			while ((read = getline(&line, &len, vpnlistfile)) != -1) 
+			{
+				if (!strncmp(line, "*vpn_servers", 12)) bFirstLine = TRUE; 
+				if (!strncmp(line, cmpstr, 150)) bSecondLine = TRUE; 
+			}
+			if (bFirstLine && bSecondLine) bValidVPNFile = TRUE;
+			// close file
+			if (vpnlistfile != NULL) fclose(vpnlistfile);
+			g_free(cmpstr);		
+		}
+	}
+	if (bValidVPNFile)
 	{
 		gchar *tempstr2 = NULL;
 
