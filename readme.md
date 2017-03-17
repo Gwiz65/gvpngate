@@ -11,6 +11,3 @@ Gvpngate is a VPN Gate frontend for Gnome Network Manager.  Gvpngate will will c
 ***[Gvpngate Downloads](https://gwiz65.github.io/gvpngate/downloads.html)***
 
 ***[Gvpngate Forum](http://gvpngate.boards.net)***
-
-
-
