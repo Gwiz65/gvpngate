@@ -6,11 +6,11 @@
 Gvpngate is a VPN Gate frontend for Gnome Network Manager.  Gvpngate will will create OpenVPN connection entries based on the vpn list provided by the VPN Gate project. Visit the project website for more details.
 
 
-_***[Gvpngate Website](https://gwiz65.github.io/gvpngate/)***_
+***[Gvpngate Website](https://gwiz65.github.io/gvpngate/)***
 
-_***[Gvpngate Downloads](https://gwiz65.github.io/gvpngate/downloads.html)***_
+***[Gvpngate Downloads](https://gwiz65.github.io/gvpngate/downloads.html)***
 
-_***[Gvpngate Forum](http://gvpngate.boards.net)***_
+***[Gvpngate Forum](http://gvpngate.boards.net)***
 
 
 
