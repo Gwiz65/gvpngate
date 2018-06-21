@@ -33,7 +33,6 @@ gchar *WorkDir;
 gchar *certdir;
 gboolean b_is_new_nmcli;
 gboolean b_selinux_enabled;
-GtkWidget *MainWindow;
 GtkWidget *MainWin_StatusBar;
 GtkWidget *VPN_List_Treeview;
 GtkWidget *MainWin_TB_Connect;
@@ -48,81 +47,11 @@ GtkListStore *VPN_List;
 /****************************
  *    Function Declares     *
  ****************************/
-gboolean Check_for_Process(void);
 gboolean Check_SElinux(void);
 gboolean Check_nmcli_Version(void);
 void Destroy_Main_Window (GtkWidget*,gpointer);
 GtkWidget* Create_Main_Window (void);
 int main (int argc, char *argv[]);
-
-/****************************************************************************
- *                                                                          *
- * Function: Check_for_Process                                              *
- *                                                                          *
- * Purpose : See if Gvpngate is already running                             *
- *           returns true if already running, false otherwise               *
- *                                                                          *
- ****************************************************************************/
-gboolean Check_for_Process(void)
-{
-	gboolean func_ret = FALSE;
-	gchar *filestr = NULL;
-	gint ret = 0;
-	gint status;
-	pid_t pid;
-	
-	filestr = g_strconcat(WorkDir, "/pslist", NULL);
-	ret = 0;
-	pid = fork();
-	if (pid == 0)
-	{
-		int fd, fd_null;
-
-		fd = open(filestr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
-		fd_null =  open("/dev/null", O_RDWR); 
-		dup2(fd, STDOUT_FILENO);   		
-		dup2(fd_null, STDERR_FILENO);	
-		close(fd);
-		close(fd_null);
-		execlp("ps", "ps", "-A", "-o", "comm", NULL);
-		_exit(EXIT_FAILURE);
-	}
-	else if (pid < 0) ret = -1;
-	else if (waitpid (pid, &status, 0) != pid)  ret = -1;
-	if ((!ret) && WIFEXITED(status) && !WEXITSTATUS(status))
-	{
-		FILE *statusfile;
-		gchar *line = NULL;
-		size_t len = 0;
-		size_t read;
-		gchar *command_str = NULL;
-		gint numofgvpngates = 0;
-
-		statusfile = fopen(filestr, "r");
-		if (statusfile != NULL)
-		{
-			// getline loop
-			while ((read = getline(&line, &len, statusfile)) != -1) 
-			{
-				gint ctr = 0;
-				//get process command string
-				while (line[ctr] != '\n') ctr++;
-				command_str = g_strndup (line, ctr);
-				//check if gvpngate exists
-				if (!strncmp(command_str, "gvpngate", 8)) numofgvpngates++;
-			}
-			if (numofgvpngates > 1) func_ret = TRUE;
-		}
-		// close file
-		if (statusfile != NULL) fclose(statusfile);
-		// delete file
-		if (stat(filestr, &st) == 0) remove(filestr);
-		g_free(line);
-		g_free(command_str);
-	}
-	g_free(filestr);
-	return func_ret;
-}
 
 /****************************************************************************
  *                                                                          *
@@ -1429,7 +1358,6 @@ void Destroy_Main_Window (GtkWidget *widget, gpointer data)
 	gtk_statusbar_remove_all(GTK_STATUSBAR(MainWin_StatusBar),
 	                         MainWin_StatusBarID);
 	// release our widgets
-	gtk_widget_destroy (MainWindow);
 	gtk_widget_destroy (MainWin_StatusBar);
 	gtk_widget_destroy (MainWin_TB_Connect);
 	gtk_widget_destroy (MainWin_Info_1);
@@ -1508,6 +1436,50 @@ GtkWidget* Create_Main_Window (void)
 
 /****************************************************************************
  *                                                                          *
+ * Function: activate                                                       *
+ *                                                                          *
+ * Purpose : called when the application is activated                       *
+ *                                                                          *
+ ****************************************************************************/
+static void activate (GtkApplication *app)
+{
+	GList *list;
+	GtkWidget *window;
+
+	list = gtk_application_get_windows (app);
+
+	if (list)
+	{
+		gtk_window_present (GTK_WINDOW (list->data));
+	}
+	else
+	{
+		// set our work directory
+		WorkDir = g_strconcat (g_get_home_dir (), "/.gvpngate", NULL);
+		// make sure work directory exists
+		if (stat(WorkDir, &st) == -1) mkdir(WorkDir, 0700);
+		// check nmcli version
+		b_is_new_nmcli = Check_nmcli_Version();
+		// check for selinux
+		b_selinux_enabled = Check_SElinux();
+		if (b_selinux_enabled)
+		{
+			// set the cert dir path
+			certdir = g_strconcat (g_get_home_dir (), "/.cert", NULL);
+			// make sure cert dir exists
+			if (stat(certdir, &st) == -1) mkdir(certdir, 0700);
+		}
+
+		window = Create_Main_Window ();
+		gtk_window_set_application (GTK_WINDOW (window), app);
+		gtk_widget_show (window);
+		// get vpn list after main loop has started
+		g_timeout_add (500, Get_Vpn_List_File, NULL);
+	}
+}
+
+/****************************************************************************
+ *                                                                          *
  * Function: main                                                           *
  *                                                                          *
  * Purpose : program main entry function                                    *
@@ -1515,36 +1487,15 @@ GtkWidget* Create_Main_Window (void)
  ****************************************************************************/
 int main (int argc, char *argv[])
 {
-	// set our work directory
-	WorkDir = g_strconcat (g_get_home_dir (), "/.gvpngate", NULL);
-	// make sure work directory exists
-	if (stat(WorkDir, &st) == -1) mkdir(WorkDir, 0700);
-	// check if already running
-	if (Check_for_Process())
-	{
-		g_print("Gvpngate is already running.\n");
-		exit(1);
-	}
-	// check nmcli version
-	b_is_new_nmcli = Check_nmcli_Version();
-	// check for selinux
-	b_selinux_enabled = Check_SElinux();
-	if (b_selinux_enabled)
-	{
-		// set the cert dir path
-		certdir = g_strconcat (g_get_home_dir (), "/.cert", NULL);
-		// make sure cert dir exists
-		if (stat(certdir, &st) == -1) mkdir(certdir, 0700);
-	}
-	// initalize gtk
-	gtk_init (&argc, &argv);
-	// create main window
-	MainWindow = Create_Main_Window ();
-	// show main window
-	gtk_widget_show (MainWindow);
-	// get vpn list after main loop has started
-	g_timeout_add (500, Get_Vpn_List_File, NULL);
-	// start main loop
-	gtk_main ();
-	return 0;
+	GtkApplication *app;
+	gint status;
+
+	app = gtk_application_new ("io.github.gwiz65.gvpngate", 0);
+	g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
+
+	status = g_application_run (G_APPLICATION (app), argc, argv);
+
+	g_object_unref (app);
+
+	return status;
 }
