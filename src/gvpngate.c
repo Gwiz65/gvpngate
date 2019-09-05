@@ -1,9 +1,9 @@
 /***************************************************************************
- *                                                                         * 
+ *                                                                         *
  * gvpngate.c                                                              *
- *                                                                         * 
+ *                                                                         *
  * Copyright (C) 2016 Gwiz <gwiz2009@gmail.com>                            *
- *                                                                         *     
+ *                                                                         *
  * gvpngate is free software: you can redistribute it and/or modify it     *
  * under the terms of the GNU General Public License as published by the   *
  * Free Software Foundation, either version 3 of the License, or           *
@@ -16,7 +16,7 @@
  *                                                                         *
  * You should have received a copy of the GNU General Public License along *
  * with this program.  If not, see <https://www.gnu.org/licenses/>.        *
- *                                                                         * 
+ *                                                                         *
  ***************************************************************************/
 #include "gvpngate.h"
 
@@ -40,9 +40,16 @@ GtkWidget *MainWin_Info_1;
 GtkWidget *MainWin_Info_2;
 GtkWidget *MainWin_Info_3;
 GtkWidget *MainWin_Info_4;
+GtkWidget *MainWin_progress_bar_revealer;
+GtkWidget *MainWin_progress_bar;
 GtkWidget *MainWin_Menu_Connect;
 GtkWidget *AboutBox;
 GtkListStore *VPN_List;
+GCancellable *download_cancellable = NULL;
+
+static const GActionEntry action_entries[] = {
+	{ "refresh", on_action_refresh_activate },
+};
 
 /****************************
  *    Function Declares     *
@@ -71,9 +78,9 @@ gboolean Check_SElinux(void)
 	pid = fork();
 	if (pid == 0)
 	{
-		int fd_null =  open("/dev/null", O_RDWR); 
-		dup2(fd_null, STDOUT_FILENO);	
-		dup2(fd_null, STDERR_FILENO); 	
+		int fd_null =  open("/dev/null", O_RDWR);
+		dup2(fd_null, STDOUT_FILENO);
+		dup2(fd_null, STDERR_FILENO);
 		close(fd_null);
 		execlp("selinuxenabled", "selinuxenabled", NULL);
 		_exit(EXIT_FAILURE);
@@ -84,7 +91,7 @@ gboolean Check_SElinux(void)
 		return TRUE;
 	else
 		return FALSE;
-}		
+}
 
 /****************************************************************************
  *                                                                          *
@@ -101,7 +108,7 @@ gboolean Check_nmcli_Version(void)
 	gint ret = 0;
 	gint status;
 	pid_t pid;
-	
+
 	filestr = g_strconcat(WorkDir, "/status", NULL);
 	ret = 0;
 	pid = fork();
@@ -110,9 +117,9 @@ gboolean Check_nmcli_Version(void)
 		int fd, fd_null;
 
 		fd = open(filestr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
-		fd_null =  open("/dev/null", O_RDWR); 
-		dup2(fd, STDOUT_FILENO);   		
-		dup2(fd_null, STDERR_FILENO);	
+		fd_null =  open("/dev/null", O_RDWR);
+		dup2(fd, STDOUT_FILENO);
+		dup2(fd_null, STDERR_FILENO);
 		close(fd);
 		close(fd_null);
 		execlp("nmcli", "nmcli", "-v", NULL);
@@ -141,7 +148,7 @@ gboolean Check_nmcli_Version(void)
 		if (statusfile != NULL)
 		{
 			// getline loop
-			while ((read = getline(&line, &len, statusfile)) != -1) 
+			while ((read = getline(&line, &len, statusfile)) != -1)
 			{
 				gint pos = 20;
 				gint ctr = 1;
@@ -242,17 +249,17 @@ void VpnListSelectionChanged (void)
 
 				while ((decoded[linepos+ctr] != '\0') &&
 				       (decoded[linepos+ctr] != '\n')) ctr++;
-				if (decoded[linepos+ctr] == '\0') 
+				if (decoded[linepos+ctr] == '\0')
 				{
-					if (ctr > 0) 
+					if (ctr > 0)
 						line = g_strndup (decoded+linepos, ctr-1);
-					getline_loop = FALSE; 
+					getline_loop = FALSE;
 				}
 				else
 					line = g_strndup (decoded+linepos, ctr);
 				if (ctr > 0)
 				{
-					// get intreasting info 
+					// get intreasting info
 					// ip & port
 					if (!strncmp(line, "remote ", 7))
 					{
@@ -332,7 +339,7 @@ void VpnListSelectionChanged (void)
 			g_free(name);
 			g_free(country);
 			g_free(labelstr);
-		}	
+		}
 		// set info label2
 		{
 			gchar *labelstr = NULL;
@@ -340,7 +347,7 @@ void VpnListSelectionChanged (void)
 			labelstr = g_strconcat (ipaddress, "\n", port, NULL);
 			gtk_label_set_markup (GTK_LABEL(MainWin_Info_2), labelstr);
 			g_free(labelstr);
-		}	
+		}
 		// set info label3
 		{
 			gchar *labelstr = NULL;
@@ -348,7 +355,7 @@ void VpnListSelectionChanged (void)
 			labelstr = g_strconcat (cipher, "\n", auth, NULL);
 			gtk_label_set_markup (GTK_LABEL(MainWin_Info_3), labelstr);
 			g_free(labelstr);
-		}	
+		}
 		// set info label4
 		{
 			gchar *labelstr = NULL;
@@ -356,7 +363,7 @@ void VpnListSelectionChanged (void)
 			labelstr = g_strconcat (device, "\n", protocol, NULL);
 			gtk_label_set_markup (GTK_LABEL(MainWin_Info_4), labelstr);
 			g_free(labelstr);
-		}	
+		}
 	}
 	else
 	{
@@ -366,7 +373,7 @@ void VpnListSelectionChanged (void)
 		// grey out connect button & menu
 		gtk_widget_set_sensitive (MainWin_TB_Connect, FALSE);
 		// clear info labels
-		gtk_label_set_markup (GTK_LABEL(MainWin_Info_1), NULL); 
+		gtk_label_set_markup (GTK_LABEL(MainWin_Info_1), NULL);
 		gtk_label_set_markup (GTK_LABEL(MainWin_Info_2), NULL);
 		gtk_label_set_markup (GTK_LABEL(MainWin_Info_3), NULL);
 		gtk_label_set_markup (GTK_LABEL(MainWin_Info_4), NULL);
@@ -446,17 +453,17 @@ gboolean CreateConnection (gpointer data)
 
 			while ((decoded[linepos+ctr] != '\0') &&
 			       (decoded[linepos+ctr] != '\n')) ctr++;
-			if (decoded[linepos+ctr] == '\0') 
+			if (decoded[linepos+ctr] == '\0')
 			{
-				if (ctr > 0) 
+				if (ctr > 0)
 					line = g_strndup (decoded+linepos, ctr-1);
-				getline_loop = FALSE; 
+				getline_loop = FALSE;
 			}
 			else
 				line = g_strndup (decoded+linepos, ctr);
 			if (ctr > 0)
 			{
-				// get intreasting info 
+				// get intreasting info
 				// ip & port
 				if (!strncmp(line, "remote ", 7))
 				{
@@ -567,7 +574,7 @@ gboolean CreateConnection (gpointer data)
 			}
 			g_free(workdir_crt);
 			g_free(certdir_crt);
-		}			
+		}
 		g_free(decoded);
 		g_free(config_data);
 	}
@@ -590,12 +597,12 @@ gboolean CreateConnection (gpointer data)
 			gint matchctr = 1;
 			char buffer[10];
 			gboolean bValidName = FALSE;
-			
+
 			// get info from selected row
 			gtk_tree_model_get (model, &iter, 5, &country, -1);
 			// see if this connection exists
 			tmp_str2 = g_strconcat("/etc/NetworkManager/system-connections/", vpnname, NULL);
-			if (stat(tmp_str2, &st) == 0) 
+			if (stat(tmp_str2, &st) == 0)
 			{
 				// use gvpngate_suid to delete it
 				ret = 0;
@@ -610,7 +617,7 @@ gboolean CreateConnection (gpointer data)
 				if (!((!ret) && WIFEXITED(status) && !WEXITSTATUS(status)))
 				{
 					gchar *tmpexitstr = NULL;
-					
+
 					// close connection file
 					if (connectfile != NULL) fclose(connectfile);
 					// remove connection file from workdir
@@ -626,7 +633,7 @@ gboolean CreateConnection (gpointer data)
 					// use gvpngate_suid to send reload
 					ret = 0;
 					pid = fork();
-					
+
 					if (pid == 0)
 					{
 						execlp("gvpngate_suid", "gvpngate_suid", NULL);
@@ -658,9 +665,9 @@ gboolean CreateConnection (gpointer data)
 				int fd, fd_null;
 
 				fd = open(tmp_str1, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
-				fd_null =  open("/dev/null", O_RDWR); 
-				dup2(fd, STDOUT_FILENO);   		
-				dup2(fd_null, STDERR_FILENO);	
+				fd_null =  open("/dev/null", O_RDWR);
+				dup2(fd, STDOUT_FILENO);
+				dup2(fd_null, STDERR_FILENO);
 				close(fd);
 				close(fd_null);
 				execlp("nmcli", "nmcli", "-t", "-f", "NAME,TYPE", "con", NULL);
@@ -711,16 +718,16 @@ gboolean CreateConnection (gpointer data)
 				else
 				{
 					// getline loop
-					while ((read = getline(&line, &len, statusfile)) != -1) 
+					while ((read = getline(&line, &len, statusfile)) != -1)
 					{
 						gint ctr = 0;
 						gint pos = 0;
 						gchar *token1 = NULL;
 						gchar *token2 = NULL;
 						gint tok1_len = 0;
-						
+
 						//get token1
-						while ((line[ctr] != ':') && 
+						while ((line[ctr] != ':') &&
 						       (line[ctr] != '\0') &&
 						       (line[ctr] != '\n')) ctr++;
 						if (line[ctr] == '\0') ctr--;
@@ -730,7 +737,7 @@ gboolean CreateConnection (gpointer data)
 						pos = ctr + 1;
 						//get token2
 						ctr = 0;
-						while ((line[ctr+pos] != ':') && 
+						while ((line[ctr+pos] != ':') &&
 						       (line[ctr+pos] != '\0') &&
 						       (line[ctr+pos] != '\n')) ctr++;
 						if (line[ctr+pos] == '\0') ctr--;
@@ -807,9 +814,9 @@ gboolean CreateConnection (gpointer data)
 		int fd, fd_null;
 
 		fd = open(tmp_str1, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
-		fd_null =  open("/dev/null", O_RDWR); 
-		dup2(fd, STDOUT_FILENO);   		
-		dup2(fd_null, STDERR_FILENO);	
+		fd_null =  open("/dev/null", O_RDWR);
+		dup2(fd, STDOUT_FILENO);
+		dup2(fd_null, STDERR_FILENO);
 		close(fd);
 		close(fd_null);
 		if (b_is_new_nmcli)
@@ -842,7 +849,7 @@ gboolean CreateConnection (gpointer data)
 		else
 		{
 			// getline loop
-			while ((read = getline(&line, &len, statusfile)) != -1) 
+			while ((read = getline(&line, &len, statusfile)) != -1)
 			{
 				gint ctr = 0;
 				gint pos = 0;
@@ -850,7 +857,7 @@ gboolean CreateConnection (gpointer data)
 				gchar *token2 = NULL;
 
 				//get token1
-				while ((line[ctr] != ':') && 
+				while ((line[ctr] != ':') &&
 				       (line[ctr] != '\0') &&
 				       (line[ctr] != '\n')) ctr++;
 				if (line[ctr] == '\0') ctr--;
@@ -859,7 +866,7 @@ gboolean CreateConnection (gpointer data)
 				pos = ctr + 1;
 				//get token2
 				ctr = 0;
-				while ((line[ctr+pos] != ':') && 
+				while ((line[ctr+pos] != ':') &&
 				       (line[ctr+pos] != '\0') &&
 				       (line[ctr+pos] != '\n')) ctr++;
 				if (line[ctr+pos] == '\0') ctr--;
@@ -872,9 +879,9 @@ gboolean CreateConnection (gpointer data)
 					pid = fork();
 					if (pid == 0)
 					{
-						int fd_null =  open("/dev/null", O_RDWR); 
-						dup2(fd_null, STDOUT_FILENO);   
-						dup2(fd_null, STDERR_FILENO);   
+						int fd_null =  open("/dev/null", O_RDWR);
+						dup2(fd_null, STDOUT_FILENO);
+						dup2(fd_null, STDERR_FILENO);
 						close(fd_null);
 						execlp("nmcli", "nmcli", "con", "down", "id", token1, NULL);
 						_exit(EXIT_FAILURE);
@@ -904,7 +911,7 @@ gboolean CreateConnection (gpointer data)
 		// use gvpngate_suid to send reload
 		ret = 0;
 		pid = fork();
-		
+
 		if (pid == 0)
 		{
 			execlp("gvpngate_suid", "gvpngate_suid", NULL);
@@ -923,9 +930,9 @@ gboolean CreateConnection (gpointer data)
 	pid = fork();
 	if (pid == 0)
 	{
-		int fd_null =  open("/dev/null", O_RDWR); 
-		dup2(fd_null, STDOUT_FILENO);	
-		dup2(fd_null, STDERR_FILENO); 	
+		int fd_null =  open("/dev/null", O_RDWR);
+		dup2(fd_null, STDOUT_FILENO);
+		dup2(fd_null, STDERR_FILENO);
 		close(fd_null);
 		execlp("nmcli", "nmcli", "con", "up", "id", nm_id, NULL);
 		_exit(EXIT_FAILURE);
@@ -937,8 +944,8 @@ gboolean CreateConnection (gpointer data)
 	{
 		gchar *msg = NULL;
 
-		msg = g_strconcat("Successfully connected to: ", vpnname, " (", nm_id, ")", NULL); 
-		Statusbar_Message(msg); 
+		msg = g_strconcat("Successfully connected to: ", vpnname, " (", nm_id, ")", NULL);
+		Statusbar_Message(msg);
 		g_free(msg);
 	}
 	else
@@ -947,9 +954,9 @@ gboolean CreateConnection (gpointer data)
 		pid = fork();
 		if (pid == 0)
 		{
-			int fd_null =  open("/dev/null", O_RDWR); 
-			dup2(fd_null, STDOUT_FILENO);   
-			dup2(fd_null, STDERR_FILENO);   
+			int fd_null =  open("/dev/null", O_RDWR);
+			dup2(fd_null, STDOUT_FILENO);
+			dup2(fd_null, STDERR_FILENO);
 			close(fd_null);
 			execlp("nmcli", "nmcli", "con", "delete", "id", nm_id, NULL);
 			_exit(EXIT_FAILURE);
@@ -964,7 +971,7 @@ gboolean CreateConnection (gpointer data)
 				// use gvpngate_suid to send reload
 				ret = 0;
 				pid = fork();
-				
+
 				if (pid == 0)
 				{
 					execlp("gvpngate_suid", "gvpngate_suid", NULL);
@@ -996,7 +1003,7 @@ gboolean CreateConnection (gpointer data)
 	g_free(auth);
 	g_free(device);
 	g_free(protocol);
-	g_free(nm_id);   
+	g_free(nm_id);
 	return FALSE;
 }
 
@@ -1013,6 +1020,349 @@ void Statusbar_Message(gchar *msg)
 	                   MainWin_StatusBarID, msg);
 }
 
+void reset_download_progressbar(void) {
+	gtk_revealer_set_reveal_child (GTK_REVEALER (MainWin_progress_bar_revealer), FALSE);
+	gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (MainWin_progress_bar), 0.0);
+}
+
+static gboolean vpn_list_validate(GDataInputStream *data_input_stream) {
+	g_autoptr(GError) error = NULL;
+	// verify downloaded file is valid by comparing 1st two lines
+	gboolean bFirstLine = FALSE;
+	gboolean bSecondLine = FALSE;
+	gchar *cmpstr = NULL;
+
+	gchar *line = NULL;
+	gsize len = 0;
+
+	cmpstr = ("#HostName,IP,Score,Ping,Speed,CountryLong,CountryShort,"
+		"NumVpnSessions,Uptime,TotalUsers,TotalTraffic,LogType,"
+		"Operator,Message,OpenVPN_ConfigData_Base64");
+	while ((line = g_data_input_stream_read_line((GDataInputStream *)data_input_stream, &len, NULL, &error)) != NULL && !bSecondLine) {
+		if (!strncmp(line, "*vpn_servers", 12)) {
+			bFirstLine = TRUE;
+		}
+		if (!strncmp(line, cmpstr, 150)) {
+			bSecondLine = TRUE;
+		}
+		g_free(line);
+	}
+
+	if (error != NULL) {
+		g_warning("Failed read the list header");
+		return FALSE;
+	}
+
+	return bFirstLine && bSecondLine;
+}
+
+static void vpn_list_populate(GDataInputStream *data_input_stream) {
+	g_autoptr(GError) error = NULL;
+
+	gchar *line = NULL;
+	gsize len = 0;
+
+	// clear list store
+	gtk_list_store_clear (VPN_List);
+	// getline loop
+	while ((line = g_data_input_stream_read_line((GDataInputStream *)data_input_stream, &len, NULL, &error)) != NULL) {
+		if (!((line[0] == '*') || (line[0] == '#'))) {
+			// we have a valid line
+			size_t ctr = 0;
+			size_t pos = 0;
+			GtkTreeIter iter;
+
+			//append line to list store
+			gtk_list_store_append (VPN_List, &iter);
+
+			{
+				// get vpn name
+				g_autofree gchar *token = NULL;
+				while (line[pos+ctr] != ',') ctr++;
+				// limit to 20 chars
+				if (ctr >= 20)
+					token = g_strndup (line+pos, 20);
+				else
+					token = g_strndup (line+pos, ctr);
+				if (g_utf8_validate (token, -1, NULL))
+					gtk_list_store_set (VPN_List, &iter, 0, token, -1);
+				pos = pos + ctr + 1;
+			}
+
+			{
+				//get IP
+				g_autofree gchar *token = NULL;
+				ctr = 0;
+				while (line[pos+ctr] != ',') ctr++;
+				token = g_strndup (line+pos, ctr);
+				if (g_utf8_validate (token, -1, NULL))
+					gtk_list_store_set (VPN_List, &iter, 1, token, -1);
+				pos = pos + ctr + 1;
+			}
+
+			{
+				//get Score
+				g_autofree gchar *token = NULL;
+				ctr = 0;
+				while (line[pos+ctr] != ',') ctr++;
+				token = g_strndup (line+pos, ctr);
+				if (g_utf8_validate (token, -1, NULL))
+					gtk_list_store_set (VPN_List, &iter, 2, atol(token), -1);
+				pos = pos + ctr + 1;
+			}
+
+			{
+				//get Ping
+				g_autofree gchar *token = NULL;
+				ctr = 0;
+				while (line[pos+ctr] != ',') ctr++;
+				token = g_strndup (line+pos, ctr);
+				if (g_utf8_validate (token, -1, NULL))
+					gtk_list_store_set (VPN_List, &iter, 3, atol(token), -1);
+				pos = pos + ctr + 1;
+			}
+
+			{
+				//get Speed
+				g_autofree gchar *token = NULL;
+				ctr = 0;
+				while (line[pos+ctr] != ',') ctr++;
+				token = g_strndup (line+pos, ctr);
+				if (g_utf8_validate (token, -1, NULL))
+					gtk_list_store_set (VPN_List, &iter, 4, atol(token), -1);
+				pos = pos + ctr + 1;
+			}
+
+			{
+				// get CountryLong
+				g_autofree gchar *token = NULL;
+				ctr = 0;
+				while (line[pos+ctr] != ',') ctr++;
+				// limit to 20 chars
+				if (ctr >= 20)
+					token = g_strndup (line+pos, 20);
+				else
+					token = g_strndup (line+pos, ctr);
+				if (g_utf8_validate (token, -1, NULL))
+					gtk_list_store_set (VPN_List, &iter, 5, token, -1);
+				pos = pos + ctr + 1;
+			}
+
+			{
+				// get CountryShort
+				g_autofree gchar *token = NULL;
+				ctr = 0;
+				while (line[pos+ctr] != ',') ctr++;
+				token = g_strndup (line+pos, ctr);
+				if (g_utf8_validate (token, -1, NULL))
+					gtk_list_store_set (VPN_List, &iter, 6, token, -1);
+				pos = pos + ctr + 1;
+			}
+
+			{
+				// get NumVpnSessions
+				g_autofree gchar *token = NULL;
+				ctr = 0;
+				while (line[pos+ctr] != ',') ctr++;
+				token = g_strndup (line+pos, ctr);
+				if (g_utf8_validate (token, -1, NULL))
+					gtk_list_store_set (VPN_List, &iter, 7, atol(token), -1);
+				pos = pos + ctr + 1;
+			}
+
+			{
+				// get Uptime
+				g_autofree gchar *token = NULL;
+				ctr = 0;
+				while (line[pos+ctr] != ',') ctr++;
+				token = g_strndup (line+pos, ctr);
+				// add to list store
+				if (g_utf8_validate (token, -1, NULL))
+					gtk_list_store_set (VPN_List, &iter, 8, atol(token), -1);
+				pos = pos + ctr + 1;
+			}
+
+			{
+				// get TotalUsers
+				g_autofree gchar *token = NULL;
+				ctr = 0;
+				while (line[pos+ctr] != ',') ctr++;
+				token = g_strndup (line+pos, ctr);
+				if (g_utf8_validate (token, -1, NULL))
+					gtk_list_store_set (VPN_List, &iter, 9, atol(token), -1);
+				pos = pos + ctr + 1;
+			}
+
+			{
+				// get TotalTraffic
+				g_autofree gchar *token = NULL;
+				ctr = 0;
+				while (line[pos+ctr] != ',') ctr++;
+				token = g_strndup (line+pos, ctr);
+				if (g_utf8_validate (token, -1, NULL))
+					gtk_list_store_set (VPN_List, &iter, 10, atol(token), -1);
+				pos = pos + ctr + 1;
+			}
+
+			{
+				// get LogType
+				g_autofree gchar *token = NULL;
+				ctr = 0;
+				while (line[pos+ctr] != ',') ctr++;
+				token = g_strndup (line+pos, ctr);
+				if (g_utf8_validate (token, -1, NULL))
+					gtk_list_store_set (VPN_List, &iter, 11, token, -1);
+				pos = pos + ctr + 1;
+			}
+
+			{
+				// get Operator
+				g_autofree gchar *token = NULL;
+				ctr = 0;
+				while (line[pos+ctr] != ',') ctr++;
+				// limit to 30 chars
+				if (ctr >= 30)
+					token = g_strndup (line+pos, 30);
+				else
+					token = g_strndup (line+pos, ctr);
+				if (g_utf8_validate (token, -1, NULL))
+					gtk_list_store_set (VPN_List, &iter, 12, token, -1);
+				pos = pos + ctr + 1;
+			}
+
+			{
+				// get Message
+				g_autofree gchar *token = NULL;
+				ctr = 0;
+				while (line[pos+ctr] != ',') ctr++;
+				// limit to 30 chars
+				if (ctr >= 30)
+					token = g_strndup (line+pos, 30);
+				else
+					token = g_strndup (line+pos, ctr);
+				if (g_utf8_validate (token, -1, NULL))
+					gtk_list_store_set (VPN_List, &iter, 13, token, -1);
+				pos = pos + ctr + 1;
+			}
+
+			{
+				// get ConfigData
+				g_autofree gchar *token = NULL;
+				token = g_strndup (line+pos, len);
+				if (g_utf8_validate (token, -1, NULL))
+					gtk_list_store_set (VPN_List, &iter, 14, token, -1);
+			}
+		}
+
+		g_free(line);
+	}
+	if (error != NULL) {
+		// return FALSE;
+		g_warning("Failed read the list body");
+	}
+}
+
+static void vpn_list_loaded(GObject *source_object, GAsyncResult *result, gpointer user_data) {
+	gboolean load_existing = user_data == NULL ? FALSE : (gboolean) user_data;
+
+	GFile *file = G_FILE (source_object);
+	GFileInputStream *file_input_stream;
+	g_autoptr(GError) error = NULL;
+
+	file_input_stream = g_file_read_finish(file, result, &error);
+
+	if (error != NULL) {
+		if (!g_error_matches(error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+			Statusbar_Message("Vpn list download failed.");
+
+			reset_download_progressbar ();
+		}
+	} else {
+		g_autoptr(GDataInputStream) data_input_stream = g_data_input_stream_new (G_INPUT_STREAM (file_input_stream));
+
+		gboolean valid_header = vpn_list_validate(data_input_stream);
+
+		if (valid_header) {
+			if (!load_existing) {
+				// rename vpn.tmp to vpn.lst
+				g_autofree gchar *templist_path = g_build_filename(WorkDir, "vpn.tmp", NULL);
+				g_autofree gchar *vpnlist_path = g_build_filename(WorkDir, "vpn.lst", NULL);
+				rename(templist_path, vpnlist_path);
+				Statusbar_Message("Vpn list successfully downloaded.");
+
+				// unselect rows
+				gtk_tree_selection_unselect_all
+					(gtk_tree_view_get_selection(GTK_TREE_VIEW(VPN_List_Treeview)));
+			}
+
+			vpn_list_populate(data_input_stream);
+		} else {
+			if (!load_existing) {
+				Statusbar_Message("Vpn list download failed.");
+				// clean up tmp file on download fail
+				g_autofree gchar *templist_path = g_build_filename(WorkDir, "vpn.tmp", NULL);
+				if (stat(templist_path, &st) == 0) {
+					remove(templist_path);
+				}
+			} else {
+				Statusbar_Message("Loading cached VPN list failed.");
+			}
+		}
+
+		reset_download_progressbar ();
+	}
+}
+
+/****************************************************************************
+ *                                                                          *
+ * Function: Load_Vpn_List_File                                             *
+ *                                                                          *
+ * Purpose : load locally cached VPN list                                   *
+ *                                                                          *
+ ****************************************************************************/
+gboolean Load_Vpn_List_File(gpointer user_data) {
+	gboolean load_existing = user_data == NULL ? FALSE : (gboolean) user_data;
+
+	g_autoptr(GFile) target_file;
+	target_file = g_file_new_build_filename (WorkDir, load_existing ? "vpn.lst" : "vpn.tmp", NULL);
+
+	g_file_read_async (target_file,
+		G_PRIORITY_DEFAULT,
+		download_cancellable,
+		vpn_list_loaded,
+		user_data);
+
+	return FALSE; // stop further requests
+}
+
+static void vpn_list_downloaded(GObject *source_object, GAsyncResult *result, gpointer user_data)
+{
+	gboolean success;
+	g_autoptr(GError) error = NULL;
+
+	success = g_file_copy_finish (G_FILE (source_object), result, &error);
+
+	if (success) {
+		Load_Vpn_List_File (FALSE);
+	} else if (error != NULL) {
+		if (!g_error_matches(error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+			Statusbar_Message("Vpn list download failed.");
+
+			reset_download_progressbar ();
+		}
+	}
+}
+
+void download_progress_callback (goffset current_num_bytes, goffset total_num_bytes, gpointer user_data) {
+	g_debug("download progress: %ld / %ld = %f", current_num_bytes, total_num_bytes, (gdouble)current_num_bytes/(gdouble)total_num_bytes);
+
+	if (total_num_bytes == 0) {
+		gtk_progress_bar_pulse (GTK_PROGRESS_BAR (MainWin_progress_bar));
+	} else {
+		gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (MainWin_progress_bar), (gdouble)current_num_bytes / (gdouble)total_num_bytes);
+	}
+}
+
 /****************************************************************************
  *                                                                          *
  * Function: Get_Vpn_List_File                                              *
@@ -1022,256 +1372,32 @@ void Statusbar_Message(gchar *msg)
  ****************************************************************************/
 gboolean Get_Vpn_List_File(gpointer data)
 {
-	gint ret;
-	gint status;
-	pid_t pid;
-	FILE *vpnlistfile;
-	gchar *line = NULL;
-	size_t len = 0;
-	size_t read;
-	gchar *tempstr = NULL;
-	gboolean bValidVPNFile = FALSE;
-	
-	// unselect rows
-	gtk_tree_selection_unselect_all 
-		(gtk_tree_view_get_selection(GTK_TREE_VIEW(VPN_List_Treeview)));
-	// call wget to retrieve data file
-	tempstr = g_strconcat("--output-document=", WorkDir, "/vpn.tmp", NULL);
-	ret = 0;
-	pid = fork();
-	if (pid == 0)
-	{
-		int fd_null =  open("/dev/null", O_RDWR); 
-		dup2(fd_null, STDOUT_FILENO);   
-		dup2(fd_null, STDERR_FILENO);   
-		close(fd_null);
-		execlp("wget", "wget", tempstr, "--quiet", "--timeout=20", 
-		       "http://www.vpngate.net/api/iphone/", NULL);
-		_exit(EXIT_FAILURE);
+	g_autoptr(GFile) source_file;
+	g_autoptr(GFile) target_file;
+	if (g_getenv("VPNGATE_LIST")) {
+		// for testing
+		source_file = g_file_new_for_uri (g_getenv("VPNGATE_LIST"));
+	} else {
+		source_file = g_file_new_for_uri ("http://www.vpngate.net/api/iphone/");
 	}
-	else if (pid < 0) ret = -1;
-	else if (waitpid (pid, &status, 0) != pid)  ret = -1;
-	// check to see if we got the file
-	if ((!ret) && WIFEXITED(status) && !WEXITSTATUS(status))
-	{
-		// verify downloaded file is valid by comparing 1st two lines
-		tempstr = g_strconcat(WorkDir, "/vpn.tmp", NULL);
-		vpnlistfile = fopen(tempstr, "r");
-		if (vpnlistfile != NULL)
-		{
-			gboolean bFirstLine = FALSE;
-			gboolean bSecondLine = FALSE;
-			gchar *cmpstr = NULL;
 
-			cmpstr = g_strconcat("#HostName,IP,Score,Ping,Speed,CountryLong,CountryShort,",
-			                     "NumVpnSessions,Uptime,TotalUsers,TotalTraffic,LogType,",
-			                     "Operator,Message,OpenVPN_ConfigData_Base64", NULL); 
-			// getline loop
-			while ((read = getline(&line, &len, vpnlistfile)) != -1) 
-			{
-				if (!strncmp(line, "*vpn_servers", 12)) bFirstLine = TRUE; 
-				if (!strncmp(line, cmpstr, 150)) bSecondLine = TRUE; 
-			}
-			if (bFirstLine && bSecondLine) bValidVPNFile = TRUE;
-			// close file
-			fclose(vpnlistfile);
-			g_free(cmpstr);		
-		}
-	}
-	if (bValidVPNFile)
-	{
-		gchar *tempstr2 = NULL;
+	target_file = g_file_new_build_filename (WorkDir, "vpn.tmp", NULL);
 
-		// rename vpn.tmp to vpn.lst
-		tempstr = g_strconcat(WorkDir,"/vpn.tmp", NULL);
-		tempstr2 = g_strconcat(WorkDir,"/vpn.lst", NULL);
-		rename(tempstr, tempstr2);
-		Statusbar_Message("Vpn list successfully downloaded.");
-		g_free(tempstr2);
-	}
-	else
-	{
-		// clean up tmp file on download fail
-		tempstr = g_strconcat(WorkDir, "/vpn.tmp", NULL);
-		if (stat(tempstr, &st) == 0) remove(tempstr);
-		// see if we have an old file
-		tempstr = g_strconcat(WorkDir, "/vpn.lst", NULL);
-		if (stat(tempstr, &st) == 0)
-		{
-			Statusbar_Message("Vpn list download failed. Using old vpn list.");
-		}
-		else 
-		{
-			Statusbar_Message("Vpn list download has completely failed.");
-			return FALSE;
-		}
-	}
-	// open vpn list file
-	tempstr = g_strconcat(WorkDir, "/vpn.lst", NULL);
-	vpnlistfile = fopen(tempstr, "r");
-	if (vpnlistfile == NULL)
-	{
-		Statusbar_Message("Unable to read VPN list. This sucks.");
-		return FALSE;
-	}
-	// clear list store
-	gtk_list_store_clear (VPN_List);
-	// getline loop
-    while ((read = getline(&line, &len, vpnlistfile)) != -1) 
-	{
-		if (!((line[0] == '*') || (line[0] == '#')))
-		{
-			// we have a valid line
-			gint ctr = 0;
-			gint pos = 0;
-			gchar *token = NULL;
-			GtkTreeIter iter;
-			
-			//append line to list store
-			gtk_list_store_append (VPN_List, &iter);
-			// get vpn name
-			while (line[pos+ctr] != ',') ctr++;
-			// limit to 20 chars
-			if (ctr >= 20)
-				token = g_strndup (line+pos, 20); 
-			else
-				token = g_strndup (line+pos, ctr); 
-			if (g_utf8_validate (token, -1, NULL))
-				gtk_list_store_set (VPN_List, &iter, 0, token, -1);
-			pos = pos + ctr + 1;
+	gtk_revealer_set_reveal_child (GTK_REVEALER (MainWin_progress_bar_revealer), TRUE);
 
-			//get IP
-			ctr = 0;
-			while (line[pos+ctr] != ',') ctr++;
-			token = g_strndup (line+pos, ctr);
-			if (g_utf8_validate (token, -1, NULL))
-				gtk_list_store_set (VPN_List, &iter, 1, token, -1);
-			pos = pos + ctr + 1;
+	g_file_copy_async (
+		source_file,
+		target_file,
+		G_FILE_COPY_OVERWRITE,
+		G_PRIORITY_DEFAULT,
+		download_cancellable,
+		download_progress_callback,
+		NULL, // progress_callback_data
+		vpn_list_downloaded, // callback
+		NULL // user_data
+	);
 
-			//get Score
-			ctr = 0;
-			while (line[pos+ctr] != ',') ctr++;
-			token = g_strndup (line+pos, ctr);
-			if (g_utf8_validate (token, -1, NULL))
-				gtk_list_store_set (VPN_List, &iter, 2, atol(token), -1);
-			pos = pos + ctr + 1;
-
-			//get Ping
-			ctr = 0;
-			while (line[pos+ctr] != ',') ctr++;
-			token = g_strndup (line+pos, ctr);
-			if (g_utf8_validate (token, -1, NULL))
-				gtk_list_store_set (VPN_List, &iter, 3, atol(token), -1);
-			pos = pos + ctr + 1;
-
-			//get Speed
-			ctr = 0;
-			while (line[pos+ctr] != ',') ctr++;
-			token = g_strndup (line+pos, ctr);
-			if (g_utf8_validate (token, -1, NULL))
-				gtk_list_store_set (VPN_List, &iter, 4, atol(token), -1);
-			pos = pos + ctr + 1;
-
-			// get CountryLong
-			ctr = 0;
-			while (line[pos+ctr] != ',') ctr++;
-			// limit to 20 chars
-			if (ctr >= 20)
-				token = g_strndup (line+pos, 20); 
-			else
-				token = g_strndup (line+pos, ctr); 
-			if (g_utf8_validate (token, -1, NULL))
-				gtk_list_store_set (VPN_List, &iter, 5, token, -1);
-			pos = pos + ctr + 1;
-
-			// get CountryShort
-			ctr = 0;
-			while (line[pos+ctr] != ',') ctr++;
-			token = g_strndup (line+pos, ctr);
-			if (g_utf8_validate (token, -1, NULL))
-				gtk_list_store_set (VPN_List, &iter, 6, token, -1);
-			pos = pos + ctr + 1;
-
-			// get NumVpnSessions
-			ctr = 0;
-			while (line[pos+ctr] != ',') ctr++;
-			token = g_strndup (line+pos, ctr);
-			if (g_utf8_validate (token, -1, NULL))
-				gtk_list_store_set (VPN_List, &iter, 7, atol(token), -1);
-			pos = pos + ctr + 1;
-
-			// get Uptime
-			ctr = 0;
-			while (line[pos+ctr] != ',') ctr++;
-			token = g_strndup (line+pos, ctr);
-  		    // add to list store
-			if (g_utf8_validate (token, -1, NULL))
-				gtk_list_store_set (VPN_List, &iter, 8, atol(token), -1);
-			pos = pos + ctr + 1;
-
-			// get TotalUsers
-			ctr = 0;
-			while (line[pos+ctr] != ',') ctr++;
-			token = g_strndup (line+pos, ctr);
-			if (g_utf8_validate (token, -1, NULL))
-				gtk_list_store_set (VPN_List, &iter, 9, atol(token), -1);
-			pos = pos + ctr + 1;
-
-			// get TotalTraffic
-			ctr = 0;
-			while (line[pos+ctr] != ',') ctr++;
-			token = g_strndup (line+pos, ctr);
-			if (g_utf8_validate (token, -1, NULL))
-				gtk_list_store_set (VPN_List, &iter, 10, atol(token), -1);
-			pos = pos + ctr + 1;
-
-			// get LogType
-			ctr = 0;
-			while (line[pos+ctr] != ',') ctr++;
-			token = g_strndup (line+pos, ctr);
-			if (g_utf8_validate (token, -1, NULL))
-				gtk_list_store_set (VPN_List, &iter, 11, token, -1);
-			pos = pos + ctr + 1;
-
-			// get Operator
-			ctr = 0;
-			while (line[pos+ctr] != ',') ctr++;
-			// limit to 30 chars
-			if (ctr >= 30)
-				token = g_strndup (line+pos, 30); 
-			else
-				token = g_strndup (line+pos, ctr); 
-			if (g_utf8_validate (token, -1, NULL))
-				gtk_list_store_set (VPN_List, &iter, 12, token, -1);
-			pos = pos + ctr + 1;
-
-			// get Message
-			ctr = 0;
-			while (line[pos+ctr] != ',') ctr++;
-			// limit to 30 chars
-			if (ctr >= 30)
-				token = g_strndup (line+pos, 30); 
-			else
-				token = g_strndup (line+pos, ctr); 
-			if (g_utf8_validate (token, -1, NULL))
-			    gtk_list_store_set (VPN_List, &iter, 13, token, -1);
-			pos = pos + ctr + 1;
-
-			// get ConfigData
-			ctr = 0;
-			while (line[pos+ctr] != '\n') ctr++;
-			token = g_strndup (line+pos, ctr);
-			if (g_utf8_validate (token, -1, NULL))
-				gtk_list_store_set (VPN_List, &iter, 14, token, -1);
-			
-			g_free(token);
-		}
-	}
-	// close file
-	if (vpnlistfile != NULL) fclose(vpnlistfile);
-	g_free(line);
-	g_free(tempstr);
-	return FALSE;
+	return FALSE; // stop further requests
 }
 
 /****************************************************************************
@@ -1297,12 +1423,12 @@ void Destroy_Main_Window (GtkWidget *widget, gpointer data)
 		int fd, fd_null;
 
 		fd = open(filestr, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
-		fd_null =  open("/dev/null", O_RDWR); 
-		dup2(fd, STDOUT_FILENO);   		
-		dup2(fd_null, STDERR_FILENO);	
+		fd_null =  open("/dev/null", O_RDWR);
+		dup2(fd, STDOUT_FILENO);
+		dup2(fd_null, STDERR_FILENO);
 		close(fd);
 		close(fd_null);
-		execlp("find", "find", WorkDir, "-name", "*.crt", "-printf", "%P\n", 
+		execlp("find", "find", WorkDir, "-name", "*.crt", "-printf", "%P\n",
 		       NULL);
 		_exit(EXIT_FAILURE);
 	}
@@ -1329,14 +1455,14 @@ void Destroy_Main_Window (GtkWidget *widget, gpointer data)
 		else
 		{
 			// step through status file
-			while ((read = getline(&line, &len, statusfile)) != -1) 
+			while ((read = getline(&line, &len, statusfile)) != -1)
 			{
 				gchar *tmpstr2 = NULL;
 				gchar *tmpstr3 = NULL;
 				gchar *tmpstr4 = NULL;
 
 				tmpstr2 = g_strndup (line, read - 5);
-				tmpstr3 = g_strconcat("/etc/NetworkManager/system-connections/", 
+				tmpstr3 = g_strconcat("/etc/NetworkManager/system-connections/",
 				                      tmpstr2, NULL);
 				tmpstr4 = g_strconcat(WorkDir, "/", tmpstr2, ".crt", NULL);
 				// if it dosen't exist in NM dir, delete from work dir
@@ -1370,7 +1496,7 @@ void Destroy_Main_Window (GtkWidget *widget, gpointer data)
 	// release global strings
 	g_free(WorkDir);
 	g_free(certdir);
-	
+
 	// release local string
 	g_free(filestr);
 	// kill the main loop
@@ -1390,7 +1516,7 @@ GtkWidget* Create_Main_Window (void)
 	GtkBuilder *builder;
 	GError* error = NULL;
 
-	// Load UI from file 
+	// Load UI from file
 	builder = gtk_builder_new ();
 	if (!gtk_builder_add_from_file (builder, UI_FILE, &error))
 	{
@@ -1417,20 +1543,24 @@ GtkWidget* Create_Main_Window (void)
 	                                (builder, "vpnlisttreeview"));
 	MainWin_Menu_Connect = GTK_WIDGET (gtk_builder_get_object
 	                                (builder, "menuitemConnect"));
+	MainWin_progress_bar_revealer = GTK_WIDGET (gtk_builder_get_object
+	                                (builder, "progress_bar_revealer"));
+	MainWin_progress_bar = GTK_WIDGET (gtk_builder_get_object
+	                                (builder, "progress_bar"));
 	AboutBox = GTK_WIDGET (gtk_builder_get_object
 	                                (builder, "aboutbox"));
 	// list store object
 	VPN_List = GTK_LIST_STORE (gtk_builder_get_object
 	                                (builder,"vpn_liststore"));
+
 	// release builder
 	g_object_unref (builder);
 	// set version in about dialog
-	gtk_about_dialog_set_version (GTK_ABOUT_DIALOG(AboutBox), 
+	gtk_about_dialog_set_version (GTK_ABOUT_DIALOG(AboutBox),
 	                              g_strconcat("Version ", GVPNGATE_VERSION, NULL));
 	// initalize statusbar and set the statusbar conxtext id
 	MainWin_StatusBarID = gtk_statusbar_get_context_id
 		(GTK_STATUSBAR(MainWin_StatusBar), "Main Window Messages");
-	Statusbar_Message("Downloading vpn list.  Please wait...");
 	return window;
 }
 
@@ -1445,6 +1575,7 @@ static void activate (GtkApplication *app)
 {
 	GList *list;
 	GtkWidget *window;
+	GActionMap *action_map;
 
 	list = gtk_application_get_windows (app);
 
@@ -1472,11 +1603,46 @@ static void activate (GtkApplication *app)
 
 		window = Create_Main_Window ();
 		gtk_window_set_application (GTK_WINDOW (window), app);
+
+		/* Actions */
+		action_map = G_ACTION_MAP (window);
+		g_action_map_add_action_entries (action_map, action_entries, G_N_ELEMENTS (action_entries), window);
+
 		gtk_widget_show (window);
-		// get vpn list after main loop has started
-		g_timeout_add (500, Get_Vpn_List_File, NULL);
+
+		download_cancellable = g_cancellable_new ();
+
+		// see if we have an old file
+		g_autofree gchar *vpnlist_path = g_build_filename(WorkDir, "vpn.lst", NULL);
+		if (stat(vpnlist_path, &st) == 0) {
+			gchar buf[256];
+			g_autofree GDate *date = g_date_new ();
+			g_date_set_time_t (date, st.st_mtime);
+			g_date_strftime(buf, 255, "%c", date);
+			g_autofree char *message = g_strdup_printf("Using vpn list from %s.", buf);
+			Statusbar_Message(message);
+			g_timeout_add (500, Load_Vpn_List_File, (gpointer) TRUE);
+		} else {
+			Statusbar_Message("Downloading vpn list.  Please wait...");
+			// get vpn list after main loop has started
+			g_timeout_add (500, Get_Vpn_List_File, NULL);
+		}
 	}
 }
+
+/****************************************************************************
+ *                                                                          *
+ * Function: on_action_refresh_activate                                     *
+ *                                                                          *
+ * Purpose : handle refresh action                                          *
+ *                                                                          *
+ ****************************************************************************/
+void on_action_refresh_activate (GSimpleAction *action, GVariant *parameter, gpointer gdata)
+{
+	Statusbar_Message("Refreshing vpn list.  Please wait...");
+	g_timeout_add (100, Get_Vpn_List_File, NULL);
+}
+
 
 /****************************************************************************
  *                                                                          *
