@@ -40,6 +40,8 @@ GtkWidget *MainWin_Info_1;
 GtkWidget *MainWin_Info_2;
 GtkWidget *MainWin_Info_3;
 GtkWidget *MainWin_Info_4;
+GtkWidget *MainWin_progress_bar_revealer;
+GtkWidget *MainWin_progress_bar;
 GtkWidget *MainWin_Menu_Connect;
 GtkWidget *AboutBox;
 GtkListStore *VPN_List;
@@ -1018,6 +1020,10 @@ void Statusbar_Message(gchar *msg)
 	                   MainWin_StatusBarID, msg);
 }
 
+void reset_download_progressbar(void) {
+	gtk_revealer_set_reveal_child (GTK_REVEALER (MainWin_progress_bar_revealer), FALSE);
+	gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (MainWin_progress_bar), 0.0);
+}
 
 static gboolean vpn_list_validate(GDataInputStream *data_input_stream) {
 	g_autoptr(GError) error = NULL;
@@ -1268,6 +1274,8 @@ static void vpn_list_loaded(GObject *source_object, GAsyncResult *result, gpoint
 	if (error != NULL) {
 		if (!g_error_matches(error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
 			Statusbar_Message("Vpn list download failed.");
+
+			reset_download_progressbar ();
 		}
 	} else {
 		g_autoptr(GDataInputStream) data_input_stream = g_data_input_stream_new (G_INPUT_STREAM (file_input_stream));
@@ -1300,6 +1308,8 @@ static void vpn_list_loaded(GObject *source_object, GAsyncResult *result, gpoint
 				Statusbar_Message("Loading cached VPN list failed.");
 			}
 		}
+
+		reset_download_progressbar ();
 	}
 }
 
@@ -1337,7 +1347,19 @@ static void vpn_list_downloaded(GObject *source_object, GAsyncResult *result, gp
 	} else if (error != NULL) {
 		if (!g_error_matches(error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
 			Statusbar_Message("Vpn list download failed.");
+
+			reset_download_progressbar ();
 		}
+	}
+}
+
+void download_progress_callback (goffset current_num_bytes, goffset total_num_bytes, gpointer user_data) {
+	g_debug("download progress: %ld / %ld = %f", current_num_bytes, total_num_bytes, (gdouble)current_num_bytes/(gdouble)total_num_bytes);
+
+	if (total_num_bytes == 0) {
+		gtk_progress_bar_pulse (GTK_PROGRESS_BAR (MainWin_progress_bar));
+	} else {
+		gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (MainWin_progress_bar), (gdouble)current_num_bytes / (gdouble)total_num_bytes);
 	}
 }
 
@@ -1361,13 +1383,15 @@ gboolean Get_Vpn_List_File(gpointer data)
 
 	target_file = g_file_new_build_filename (WorkDir, "vpn.tmp", NULL);
 
+	gtk_revealer_set_reveal_child (GTK_REVEALER (MainWin_progress_bar_revealer), TRUE);
+
 	g_file_copy_async (
 		source_file,
 		target_file,
 		G_FILE_COPY_OVERWRITE,
 		G_PRIORITY_DEFAULT,
 		download_cancellable,
-		NULL, // progress_callback
+		download_progress_callback,
 		NULL, // progress_callback_data
 		vpn_list_downloaded, // callback
 		NULL // user_data
@@ -1519,6 +1543,10 @@ GtkWidget* Create_Main_Window (void)
 	                                (builder, "vpnlisttreeview"));
 	MainWin_Menu_Connect = GTK_WIDGET (gtk_builder_get_object
 	                                (builder, "menuitemConnect"));
+	MainWin_progress_bar_revealer = GTK_WIDGET (gtk_builder_get_object
+	                                (builder, "progress_bar_revealer"));
+	MainWin_progress_bar = GTK_WIDGET (gtk_builder_get_object
+	                                (builder, "progress_bar"));
 	AboutBox = GTK_WIDGET (gtk_builder_get_object
 	                                (builder, "aboutbox"));
 	// list store object

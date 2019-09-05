@@ -609,6 +609,23 @@ Type</property>
           </packing>
         </child>
         <child>
+          <object class="GtkRevealer" id="progress_bar_revealer">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkProgressBar" id="progress_bar">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkStatusbar" id="mainwindowstatbar">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -618,7 +635,7 @@ Type</property>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">3</property>
+            <property name="position">4</property>
           </packing>
         </child>
       </object>
