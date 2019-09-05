@@ -45,3 +45,4 @@ void VpnListSelectionChanged (void);
 gboolean CreateConnection (gpointer);
 void Statusbar_Message(gchar*);
 gboolean Get_Vpn_List_File(gpointer);
+void on_action_refresh_activate (GSimpleAction *action, GVariant *parameter, gpointer gdata);

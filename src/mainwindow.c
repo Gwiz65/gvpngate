@@ -54,19 +54,6 @@ void on_menuitemConnect_activate (GtkMenuItem *menuitem, gpointer user_data)
 
 /****************************************************************************
  *                                                                          *
- * Function: on_menuitemRefresh_activate                                    *
- *                                                                          *
- * Purpose :                                                                *
- *                                                                          *
- ****************************************************************************/
-void on_menuitemRefresh_activate (GtkMenuItem *menuitem, gpointer user_data)
-{
-	Statusbar_Message("Refreshing vpn list.  Please wait...");
-	g_timeout_add (100, Get_Vpn_List_File, NULL);
-}
-
-/****************************************************************************
- *                                                                          *
  * Function: on_vpnlisttreeview_row_activated                               *
  *                                                                          *
  * Purpose : handle row double-click                                        *
@@ -101,17 +88,4 @@ void on_toolbutton_connect_clicked (GtkToolButton *toolbutton, gpointer user_dat
 {
 	Statusbar_Message("Attempting to connect to selected VPN.  Please wait...");
 	g_timeout_add (100, CreateConnection, NULL);
-}
-
-/****************************************************************************
- *                                                                          *
- * Function: on_toolbutton_refresh_clicked                                  *
- *                                                                          *
- * Purpose : handle refresh button clicked signal                           *
- *                                                                          *
- ****************************************************************************/
-void on_toolbutton_refresh_clicked (GtkToolButton *toolbutton, gpointer user_data)
-{
-	Statusbar_Message("Refreshing vpn list.  Please wait...");
-	g_timeout_add (100, Get_Vpn_List_File, NULL);
 }

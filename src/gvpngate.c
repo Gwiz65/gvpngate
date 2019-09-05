@@ -45,6 +45,10 @@ GtkWidget *AboutBox;
 GtkListStore *VPN_List;
 GCancellable *download_cancellable = NULL;
 
+static const GActionEntry action_entries[] = {
+	{ "refresh", on_action_refresh_activate },
+};
+
 /****************************
  *    Function Declares     *
  ****************************/
@@ -1543,6 +1547,7 @@ static void activate (GtkApplication *app)
 {
 	GList *list;
 	GtkWidget *window;
+	GActionMap *action_map;
 
 	list = gtk_application_get_windows (app);
 
@@ -1570,6 +1575,11 @@ static void activate (GtkApplication *app)
 
 		window = Create_Main_Window ();
 		gtk_window_set_application (GTK_WINDOW (window), app);
+
+		/* Actions */
+		action_map = G_ACTION_MAP (window);
+		g_action_map_add_action_entries (action_map, action_entries, G_N_ELEMENTS (action_entries), window);
+
 		gtk_widget_show (window);
 
 		download_cancellable = g_cancellable_new ();
@@ -1591,6 +1601,20 @@ static void activate (GtkApplication *app)
 		}
 	}
 }
+
+/****************************************************************************
+ *                                                                          *
+ * Function: on_action_refresh_activate                                     *
+ *                                                                          *
+ * Purpose : handle refresh action                                          *
+ *                                                                          *
+ ****************************************************************************/
+void on_action_refresh_activate (GSimpleAction *action, GVariant *parameter, gpointer gdata)
+{
+	Statusbar_Message("Refreshing vpn list.  Please wait...");
+	g_timeout_add (100, Get_Vpn_List_File, NULL);
+}
+
 
 /****************************************************************************
  *                                                                          *
